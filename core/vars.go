@@ -21,7 +21,8 @@ type coreVars struct {
 }
 
 type coreVarsStatus struct {
-	IsInit bool
+	IsInit   bool
+	InitTime int64
 }
 
 func defaultVars() coreVars {

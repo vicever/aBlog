@@ -2,11 +2,10 @@ package core
 
 import (
 	"github.com/codegangsta/cli"
-	"github.com/fuxiaohei/ablog/cmd"
 	"os"
 )
 
-var Commander *cli.App = defaultCommander()
+var Cmd *cli.App = defaultCommander()
 
 func defaultCommander() *cli.App {
 	// todo : system language
@@ -15,14 +14,9 @@ func defaultCommander() *cli.App {
 	app.Usage = Vars.Description
 	app.Author = Vars.Author
 	app.Version = Vars.Version
-
-	// init commands
-	app.Commands = []cli.Command{
-		cmd.InitCommand,
-	}
 	return app
 }
 
 func Run() {
-	Commander.Run(os.Args)
+	Cmd.Run(os.Args)
 }
