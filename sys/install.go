@@ -23,6 +23,9 @@ func initFunction(ctx *cli.Context) {
 	// assign init time, use for id generator
 	core.Vars.Status.InitTime = time.Now().Unix()
 
+	// stop event async
+	core.Event.EnableAsync = false
+
 	// init admin
 	initAdminUser(ctx.String("name"))
 

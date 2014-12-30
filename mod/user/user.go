@@ -13,6 +13,8 @@ const (
 	ROLE_READER
 
 	userKeyString = "user:%d"
+
+	EVENT_USER_CREATE = "user-create"
 )
 
 type User struct {
@@ -69,6 +71,8 @@ func Create(name, email, password string, role int) (*User, error) {
 	if err := core.Db.SetJson(fmt.Sprintf(userKeyString, u.Id), u); err != nil {
 		return nil, err
 	}
+
+	core.Event.Call(EVENT_USER_CREATE, u)
 
 	return u, nil
 }
