@@ -1,4 +1,4 @@
-package core
+package sys
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -130,16 +131,15 @@ func Fatal(format string, args ...interface{}) {
 // 文件日志
 
 type FileLogger struct {
-	fileChan  chan string
 	filePath  string
 	writer    *os.File
 	isRunning bool
+	mutex     sync.Mutex
 }
 
 func NewFileLogger(file string) *FileLogger {
 	logger := &FileLogger{
 		filePath:  file,
-		fileChan:  make(chan string),
 		isRunning: false,
 	}
 	logger.prepare()
@@ -161,16 +161,8 @@ func (f *FileLogger) prepare() {
 		Error("[FileLogger][OpenFile][%v]", err)
 		return
 	}
-	go func() {
-		f.isRunning = true
-		for {
-			logStr := <-f.fileChan
-			_, err = f.writer.WriteString(logStr)
-			if err != nil {
-				Warn("[FileLogger][Write][%v]", err)
-			}
-		}
-	}()
+
+	f.isRunning = true
 }
 
 func (f *FileLogger) Write(message string) {
@@ -178,5 +170,7 @@ func (f *FileLogger) Write(message string) {
 		return
 	}
 	message = time.Now().Format(TIME_FORMAT) + " " + message
-	f.fileChan <- message
+	f.mutex.Lock()
+	f.writer.WriteString(message)
+	f.mutex.Unlock()
 }

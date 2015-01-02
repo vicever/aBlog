@@ -1,4 +1,4 @@
-package core
+package sys
 
 import (
 	"encoding/binary"
@@ -8,58 +8,54 @@ import (
 	"math"
 )
 
-var (
-	Db *noDbClient
-)
+var NoDb *nodbClient
 
-type noDbClient struct {
-	Db    *nodb.Nodb
-	DbSet *nodb.DB
+type nodbClient struct {
+	db    *nodb.Nodb
+	dbSet *nodb.DB
 }
 
-func init() {
-	ConnectDb()
-
-}
-
-func ConnectDb() {
+func newNodbClient() *nodbClient {
 	cfg := config.NewConfigDefault()
-	cfg.DataDir = Vars.DataDirectory
+	cfg.DataDir = Config.NoDb.Directory
 
-	NoDb, err := nodb.Open(cfg)
+	db, err := nodb.Open(cfg)
 	if err != nil {
-		panic(err)
+		Fatal("[NoDB] open database error : %v", err)
+		return nil
 	}
 
-	DbSet, err := NoDb.Select(Vars.DbIndex)
+	dbSet, err := db.Select(Config.NoDb.Index)
 	if err != nil {
-		panic(err)
+		Fatal("[NoDB] open database error : %v", err)
+		return nil
 	}
 
-	Db = &noDbClient{NoDb, DbSet}
+	return &nodbClient{db, dbSet}
+
 }
 
 // bytes
-func (c *noDbClient) Set(key string, value []byte) error {
-	return c.DbSet.Set([]byte(key), value)
+func (c *nodbClient) Set(key string, value []byte) error {
+	return c.dbSet.Set([]byte(key), value)
 }
 
-func (c *noDbClient) Get(key string) ([]byte, error) {
-	return c.DbSet.Get([]byte(key))
+func (c *nodbClient) Get(key string) ([]byte, error) {
+	return c.dbSet.Get([]byte(key))
 }
 
 // int
-func (c *noDbClient) SetInt64(key string, value int64) error {
+func (c *nodbClient) SetInt64(key string, value int64) error {
 	bytes := make([]byte, binary.MaxVarintLen64)
 	binary.PutVarint(bytes, value)
-	return c.DbSet.Set([]byte(key), bytes)
+	return c.dbSet.Set([]byte(key), bytes)
 }
 
-func (c *noDbClient) SetInt(key string, value int) error {
+func (c *nodbClient) SetInt(key string, value int) error {
 	return c.SetInt64(key, int64(value))
 }
 
-func (c *noDbClient) GetInt64(key string) (int64, error) {
+func (c *nodbClient) GetInt64(key string) (int64, error) {
 	bytes, err := c.Get(key)
 	if err != nil {
 		return 0, err
@@ -68,13 +64,13 @@ func (c *noDbClient) GetInt64(key string) (int64, error) {
 	return value, nil
 }
 
-func (c *noDbClient) GetInt(key string) (int, error) {
+func (c *nodbClient) GetInt(key string) (int, error) {
 	value, err := c.GetInt64(key)
 	return int(value), err
 }
 
 // bool
-func (c *noDbClient) SetBool(key string, value bool) error {
+func (c *nodbClient) SetBool(key string, value bool) error {
 	var bytes []byte
 	if value {
 		bytes = []byte("true")
@@ -84,7 +80,7 @@ func (c *noDbClient) SetBool(key string, value bool) error {
 	return c.Set(key, bytes)
 }
 
-func (c *noDbClient) GetBool(key string) (bool, error) {
+func (c *nodbClient) GetBool(key string) (bool, error) {
 	bytes, err := c.Get(key)
 	if err != nil {
 		return false, err
@@ -108,14 +104,14 @@ func Float64bytes(float float64) []byte {
 */
 
 // float
-func (c *noDbClient) SetFloat(key string, value float64) error {
+func (c *nodbClient) SetFloat(key string, value float64) error {
 	bits := math.Float64bits(value)
 	bytes := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bytes, bits)
-	return c.DbSet.Set([]byte(key), bytes)
+	return c.dbSet.Set([]byte(key), bytes)
 }
 
-func (c *noDbClient) GetFloat(key string) (float64, error) {
+func (c *nodbClient) GetFloat(key string) (float64, error) {
 	bytes, err := c.Get(key)
 	if err != nil {
 		return 0, err
@@ -126,7 +122,7 @@ func (c *noDbClient) GetFloat(key string) (float64, error) {
 }
 
 // json
-func (c *noDbClient) SetJson(key string, value interface{}) error {
+func (c *nodbClient) SetJson(key string, value interface{}) error {
 	bytes, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -134,7 +130,7 @@ func (c *noDbClient) SetJson(key string, value interface{}) error {
 	return c.Set(key, bytes)
 }
 
-func (c *noDbClient) GetJson(key string, value interface{}) error {
+func (c *nodbClient) GetJson(key string, value interface{}) error {
 	bytes, err := c.Get(key)
 	if err != nil {
 		return err
@@ -143,16 +139,22 @@ func (c *noDbClient) GetJson(key string, value interface{}) error {
 }
 
 // set expire
-func (c *noDbClient) SExpire(key string, duration int64) error {
-	_, err := c.DbSet.SExpire([]byte(key), duration)
+func (c *nodbClient) SExpire(key string, duration int64) error {
+	_, err := c.dbSet.SExpire([]byte(key), duration)
 	return err
 }
 
 // check exist
-func (c *noDbClient) Exist(key string) bool {
-	v, err := c.DbSet.Exists([]byte(key))
+func (c *nodbClient) Exist(key string) bool {
+	v, err := c.dbSet.Exists([]byte(key))
 	if err != nil {
 		return false
 	}
 	return v > 0
+}
+
+// del key
+func (c *nodbClient) Del(key string) error {
+	_, err := c.dbSet.Del([]byte(key))
+	return err
 }

@@ -1,22 +1,22 @@
-package core
+package sys
 
 var Event *eventCaller = newEventCaller()
 
-type eventMsg struct {
+type EventMsg struct {
 	Name  string
 	Value interface{}
 }
 
 type eventCaller struct {
-	handlers    map[string][]func(eventMsg)
-	msgChan     chan eventMsg
+	handlers    map[string][]func(EventMsg)
+	msgChan     chan EventMsg
 	EnableAsync bool
 }
 
 func newEventCaller() *eventCaller {
 	caller := &eventCaller{
-		handlers:    make(map[string][]func(eventMsg)),
-		msgChan:     make(chan eventMsg),
+		handlers:    make(map[string][]func(EventMsg)),
+		msgChan:     make(chan EventMsg),
 		EnableAsync: true,
 	}
 	go caller.init()
@@ -31,15 +31,15 @@ func (caller *eventCaller) init() {
 }
 
 // event on
-func (caller *eventCaller) On(name string, fn func(eventMsg)) {
+func (caller *eventCaller) On(name string, fn func(EventMsg)) {
 	if len(caller.handlers[name]) == 0 {
-		caller.handlers[name] = []func(eventMsg){fn}
+		caller.handlers[name] = []func(EventMsg){fn}
 		return
 	}
 	caller.handlers[name] = append(caller.handlers[name], fn)
 }
 
-func (caller *eventCaller) callMessage(msg eventMsg) {
+func (caller *eventCaller) callMessage(msg EventMsg) {
 	handlers := caller.handlers[msg.Name]
 	if len(handlers) == 0 {
 		return
@@ -51,7 +51,7 @@ func (caller *eventCaller) callMessage(msg eventMsg) {
 
 // run event sync
 func (caller *eventCaller) CallSync(name string, value interface{}) {
-	msg := eventMsg{name, value}
+	msg := EventMsg{name, value}
 	caller.callMessage(msg)
 }
 
@@ -61,6 +61,6 @@ func (caller *eventCaller) Call(name string, value interface{}) {
 		caller.CallSync(name, value)
 		return
 	}
-	msg := eventMsg{name, value}
+	msg := EventMsg{name, value}
 	caller.msgChan <- msg
 }
