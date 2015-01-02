@@ -82,30 +82,46 @@ func (logout LogoutRoute) Get() {
 
 type AuthUserRoute interface {
 	SetAuthUser(*User)
+	IsFailRedirect() bool
 }
 
-func AuthorizeHandler(isRedirect bool) tango.HandlerFunc {
+func AuthorizeHandler() tango.HandlerFunc {
 	return func(ctx *tango.Context) {
 		if ctx.Action() == nil {
 			ctx.Next()
 			return
 		}
-		cookie, _ := ctx.Req().Cookie(TOKEN_COOKIE_NAME)
-		if cookie != nil {
-			if token, user, _ := GetToken(cookie.Value); token != nil {
-				// token fail
-				if token.IsExpired() || user == nil {
-					if isRedirect {
-						ctx.Redirect("/login")
-						return
-					}
-				} else {
-					if action, ok := ctx.Action().(AuthUserRoute); ok {
-						action.SetAuthUser(user)
-					}
-				}
-			}
+		// only support AuthUserRoute implementation
+		action, ok := ctx.Action().(AuthUserRoute)
+		if !ok {
+			ctx.Next()
+			return
 		}
+
+		// get cookie
+		cookie, _ := ctx.Req().Cookie(TOKEN_COOKIE_NAME)
+		if cookie == nil {
+			if action.IsFailRedirect() {
+				ctx.Redirect("/login")
+				return
+			}
+			ctx.Next()
+			return
+		}
+
+		// get token and user
+		token, user, _ := GetToken(cookie.Value)
+		if token == nil || token.IsExpired() || user == nil {
+			if action.IsFailRedirect() {
+				ctx.Redirect("/login")
+				return
+			}
+			ctx.Next()
+			return
+		}
+
+		// assign action
+		action.SetAuthUser(user)
 		ctx.Next()
 	}
 }

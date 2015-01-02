@@ -3,10 +3,12 @@
 *.a
 *.so
 ablog
+ablog.toml
 
 # Folders
 _obj
 _test
+storage
 data
 
 # Architecture specific extensions/prefixes
