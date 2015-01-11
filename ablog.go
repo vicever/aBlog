@@ -2,16 +2,22 @@ package main
 
 import (
 	"github.com/fuxiaohei/ablog/cmd"
-	"github.com/fuxiaohei/ablog/sys"
+	"github.com/fuxiaohei/ablog/core"
+	"github.com/fuxiaohei/ablog/mod"
 	"runtime"
 )
 
 func main() {
+	// multiple processes
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	sys.Init()
-
+	// init commands
 	cmd.Init()
 
-	sys.Run()
+	// init modules
+	mod.Init()
+
+	// start engine
+	core.Start()
+
 }

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <title>Log in to ABlog</title>
+    <link rel="stylesheet" href="/theme/admin/css/login.css"/>
+</head>
+<body>
+<form id="login-form" action="" accept-charset="UTF-8" class="clearfix">
+    <h1>Log in to ABlog</h1>
+        <label>
+            <input name="username" id="login-username" type="text" class="focus" placeholder="Username or Email">
+        </label>
+        <label>
+            <input name="password" id="login-password" type="password" placeholder="Password">
+        </label>
+        <label>
+            <button class="button-save login-button" type="submit">Login</button>
+            <span class="login-remember"><input id="login-remember" type="checkbox">&nbsp;&nbsp;Keep me logged in</span>
+        </label>
+        <p class="login-question"><a href="/login/recover/">Forgotten Your Password?</a></p>
+        {{.XsrfFormHtml}}
+</form>
+</body>
+</html>

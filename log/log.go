@@ -1,14 +1,12 @@
-package sys
+package log
 
 import (
 	"fmt"
-	"github.com/Unknwon/com"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -17,8 +15,8 @@ const (
 )
 
 var (
-	LEVEL_FLAGS  = [...]string{"DEBUG", " INFO", " WARN", "ERROR", "FATAL"}
-	globalLogger = NewLogger(os.Stderr, "[LOG]", true, false)
+	LEVEL_FLAGS  = [...]string{"Debug", " Info", " Warn", "Error", "Fatal"}
+	globalLogger = NewLogger(os.Stderr, "[ablog]", true, false)
 )
 
 type Logger struct {
@@ -81,23 +79,23 @@ func (lg *Logger) Print(level int, format string, args ...interface{}) {
 
 	switch level {
 	case DEBUG:
-		fmt.Fprintf(lg.Writer, "%s \033[36m%s\033[0m [\033[34m%s\033[0m] %s%s\n",
+		fmt.Fprintf(lg.Writer, "%s \033[36m%s\033[0m \033[34m[%s] %s%s\033[0m\n",
 			lg.Prefix, time.Now().Format(TIME_FORMAT), LEVEL_FLAGS[level], depthInfo,
 			fmt.Sprintf(format, args...))
 	case INFO:
-		fmt.Fprintf(lg.Writer, "%s \033[36m%s\033[0m [\033[32m%s\033[0m] %s%s\n",
+		fmt.Fprintf(lg.Writer, "%s \033[36m%s\033[0m \033[32m[%s] %s%s\033[0m\n",
 			lg.Prefix, time.Now().Format(TIME_FORMAT), LEVEL_FLAGS[level], depthInfo,
 			fmt.Sprintf(format, args...))
 	case WARNING:
-		fmt.Fprintf(lg.Writer, "%s \033[36m%s\033[0m [\033[33m%s\033[0m] %s%s\n",
+		fmt.Fprintf(lg.Writer, "%s \033[36m%s\033[0m \033[33m[%s] %s%s\033[0m\n",
 			lg.Prefix, time.Now().Format(TIME_FORMAT), LEVEL_FLAGS[level], depthInfo,
 			fmt.Sprintf(format, args...))
 	case ERROR:
-		fmt.Fprintf(lg.Writer, "%s \033[36m%s\033[0m [\033[31m%s\033[0m] %s%s\n",
+		fmt.Fprintf(lg.Writer, "%s \033[36m%s\033[0m \033[31m[%s] %s%s\033[0m\n",
 			lg.Prefix, time.Now().Format(TIME_FORMAT), LEVEL_FLAGS[level], depthInfo,
 			fmt.Sprintf(format, args...))
 	case FATAL:
-		fmt.Fprintf(lg.Writer, "%s \033[36m%s\033[0m [\033[35m%s\033[0m] %s%s\n",
+		fmt.Fprintf(lg.Writer, "%s \033[36m%s\033[0m \033[35m[%s] %s%s\033[0m\n",
 			lg.Prefix, time.Now().Format(TIME_FORMAT), LEVEL_FLAGS[level], depthInfo,
 			fmt.Sprintf(format, args...))
 		os.Exit(1)
@@ -126,51 +124,4 @@ func Error(format string, args ...interface{}) {
 
 func Fatal(format string, args ...interface{}) {
 	globalLogger.Print(FATAL, format, args...)
-}
-
-// 文件日志
-
-type FileLogger struct {
-	filePath  string
-	writer    *os.File
-	isRunning bool
-	mutex     sync.Mutex
-}
-
-func NewFileLogger(file string) *FileLogger {
-	logger := &FileLogger{
-		filePath:  file,
-		isRunning: false,
-	}
-	logger.prepare()
-	return logger
-}
-
-func (f *FileLogger) prepare() {
-	var err error
-
-	dir := filepath.Dir(f.filePath)
-	if !com.IsDir(dir) {
-		if err = os.MkdirAll(dir, os.ModePerm); err != nil {
-			Error("[FileLogger][Prepare][%v]", err)
-			return
-		}
-	}
-	f.writer, err = os.OpenFile(f.filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		Error("[FileLogger][OpenFile][%v]", err)
-		return
-	}
-
-	f.isRunning = true
-}
-
-func (f *FileLogger) Write(message string) {
-	if !f.isRunning {
-		return
-	}
-	message = time.Now().Format(TIME_FORMAT) + " " + message
-	f.mutex.Lock()
-	f.writer.WriteString(message)
-	f.mutex.Unlock()
 }
