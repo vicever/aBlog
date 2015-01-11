@@ -9,12 +9,12 @@ import (
 
 type LoginAction struct {
 	tango.Ctx
-	base.Renders
+	base.AdminRenders
 	xsrf.Checker
 }
 
 func (l *LoginAction) Get() {
-	l.RenderAdmin("login.html", renders.T{
+	l.Render("login.html", renders.T{
 		"XsrfFormHtml": l.XsrfFormHtml,
 	})
 }
