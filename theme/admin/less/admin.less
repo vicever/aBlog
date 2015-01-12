@@ -5,6 +5,18 @@ body{
   height: 100%;
 }
 
+.admin-pager{
+  li{
+    a{
+      padding: 4px 8px;
+    }
+    float: left;
+    margin-right: 12px;
+  }
+  list-style: none;
+  padding-left: 0;
+}
+
 #admin-menu{
   height: 100%;
   width: 200px;
@@ -35,6 +47,13 @@ body{
     width: 30px;
     height: 30px;
     margin-right: 12px;
+  }
+  .num{
+    background-color:#ff745f;
+    color: #FFF;
+    padding: 4px 6px;
+    font-size: 13px;
+    margin-left: 8px;
   }
 }
 
@@ -107,5 +126,26 @@ body{
        opacity: 1;
       }
     }
+  }
+}
+
+#article-pager{
+  padding-left: 24px;
+  line-height: 80px;
+  a{
+    background-color: #EEE;
+    border:1px solid #888;
+    color: #444;
+    transition: all linear .25s;
+  }
+  a.current{
+    background-color: #03a3f1;
+    border-color: #095f8a;
+    color: #FAFAFA;
+  }
+  a:hover{
+    background-color: #444;
+    border-color: #444;
+    color: #FAFAFA;
   }
 }

@@ -306,6 +306,17 @@ html,
 body {
   height: 100%;
 }
+.admin-pager {
+  list-style: none;
+  padding-left: 0;
+}
+.admin-pager li {
+  float: left;
+  margin-right: 12px;
+}
+.admin-pager li a {
+  padding: 4px 8px;
+}
 #admin-menu {
   height: 100%;
   width: 200px;
@@ -337,6 +348,13 @@ body {
   width: 30px;
   height: 30px;
   margin-right: 12px;
+}
+#admin-menu .num {
+  background-color: #ff745f;
+  color: #FFF;
+  padding: 4px 6px;
+  font-size: 13px;
+  margin-left: 8px;
 }
 #admin-main {
   padding-left: 236px;
@@ -405,4 +423,24 @@ body {
 }
 #article-list li:hover a.read {
   opacity: 1;
+}
+#article-pager {
+  padding-left: 24px;
+  line-height: 80px;
+}
+#article-pager a {
+  background-color: #EEE;
+  border: 1px solid #888;
+  color: #444;
+  transition: all linear .25s;
+}
+#article-pager a.current {
+  background-color: #03a3f1;
+  border-color: #095f8a;
+  color: #FAFAFA;
+}
+#article-pager a:hover {
+  background-color: #444;
+  border-color: #444;
+  color: #FAFAFA;
 }
