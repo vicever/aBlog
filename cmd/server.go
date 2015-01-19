@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"ablog/core"
+	"ablog/mvc/controller"
 	"github.com/codegangsta/cli"
 )
 
@@ -13,6 +14,9 @@ var ServerCommand cli.Command = cli.Command{
 		if core.Db == nil || core.Web == nil {
 			core.Log.Fatal("did you install ABlog?")
 		}
+
+		// init controllers' rules
+		controller.Register()
 
 		// start server
 		core.Web.Run()

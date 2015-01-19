@@ -52,6 +52,13 @@ func NewUser(name, password, email, role string) *User {
 	return u
 }
 
+// check password
+func (u *User) IsSamePassword(password string) bool {
+	salt := util.MD5Short(password, "")
+	password = util.Sha256(password, salt)
+	return password == u.PasswordSalt
+}
+
 func generateUserID() int64 {
 	diff := time.Now().Unix() - core.Config.InstallTime
 	return diff/300 + 1
