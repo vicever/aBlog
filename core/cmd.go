@@ -1,16 +1,18 @@
 package core
 
-import (
-	"github.com/codegangsta/cli"
-)
+import "github.com/codegangsta/cli"
 
-var Cmd *cli.App = newCli()
+type coreCmd struct {
+	*cli.App
+}
 
-func newCli() *cli.App {
+func newCoreCmd() *coreCmd {
 	app := cli.NewApp()
-	app.Name = BLOG_NAME
-	app.Usage = BLOG_DESC
-	app.Version = BLOG_VERSION
-	app.Author = BLOG_AUTHOR
-	return app
+	app.Name = Vars.Name
+	app.Usage = Vars.Description
+	app.Author = Vars.Author
+	app.Email = Vars.AuthorEmail
+	app.Version = Vars.Version + " " + Vars.VersionStatus
+	app.Commands = []cli.Command{}
+	return &coreCmd{app}
 }

@@ -1,13 +1,32 @@
 package core
 
-var (
-	BLOG_NAME         = "ablog"
-	BLOG_DESC         = "a simple golang blog engine"
-	BLOG_VERSION      = "0.1"
-	BLOG_VERSION_DATE = "2015-01-10"
-	BLOG_AUTHOR       = "fuxiaohei(fuxiaohei@vip.qq.com)"
-	BLOG_GITHUB       = "https://github.com/fuxiaohei/ablog"
-	BLOG_OFFICIAL     = BLOG_GITHUB
+type coreVars struct {
+	Name          string
+	Version       string
+	VersionDate   string
+	VersionStatus string
+	Description   string
 
-	CONFIG_FILE = "ablog.toml"
-)
+	Official string
+
+	Author       string
+	AuthorEmail  string
+	AuthorGithub string
+}
+
+func newCoreVars() *coreVars {
+	vars := &coreVars{
+		Name:          "ablog",
+		Version:       "0.2",
+		VersionDate:   "20150122",
+		VersionStatus: "alpha",
+		Description:   "an golang blog engine",
+
+		Official: "http://github.com/fuxiaohei/ablog",
+
+		Author:       "fuxiaohei",
+		AuthorEmail:  "fuxiaohei@vip.qq.com",
+		AuthorGithub: "https://github.com/fuxiaohei",
+	}
+	return vars
+}

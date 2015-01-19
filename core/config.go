@@ -7,48 +7,31 @@ import (
 	"time"
 )
 
-var Config *config = &config{
-	App: appConfig{
-		Name:        BLOG_NAME,
-		Desc:        BLOG_DESC,
-		Version:     BLOG_VERSION,
-		VersionDate: BLOG_VERSION_DATE,
-		Author:      BLOG_AUTHOR,
-		Github:      BLOG_GITHUB,
-		Official:    BLOG_OFFICIAL,
-	},
-	Server: serverConfig{
-		Addr:     "0.0.0.0",
-		Port:     3003,
-		Protocol: "http",
-	},
-}
+var ConfigFile string = "config.toml"
 
-type config struct {
-	App       appConfig    `toml:"app"`
-	Server    serverConfig `toml:"server"`
-	Installed time.Time
-}
+type coreConfig struct {
+	InstallTime int64  `toml:"install_time"`
+	LogFile     string `toml:"log_file"`
 
-type appConfig struct {
-	Name        string `toml:"name"`
-	Desc        string `toml:"desc"`
-	Version     string `toml:"version"`
-	VersionDate string `toml:"version_date"`
-	Author      string `toml:"author"`
-	Github      string `toml:"github"`
-	Official    string `toml:"official"`
+	App    coreVars     `toml:"app"`
+	Server serverConfig `toml:"server"`
+	Db     dbConfig     `toml:"db"`
 }
 
 type serverConfig struct {
-	Addr     string `toml:"addr"`
-	Port     int    `toml:"port"`
-	Protocol string `toml:"protocol"`
+	Addr     string
+	Port     string
+	Protocol string
 }
 
-func (c *config) WriteFile() error {
-	c.Installed = time.Now()
-	f, err := os.OpenFile(CONFIG_FILE, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+type dbConfig struct {
+	Directory string
+	Index     int
+}
+
+func (c *coreConfig) WriteFile() error {
+	c.InstallTime = time.Now().Unix()
+	f, err := os.OpenFile(ConfigFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -56,11 +39,32 @@ func (c *config) WriteFile() error {
 	return encoder.Encode(c)
 }
 
-func (c *config) ReadFile() error {
-	_, err := toml.DecodeFile(CONFIG_FILE, c)
+func (c *coreConfig) ReadFile() error {
+	_, err := toml.DecodeFile(ConfigFile, c)
 	return err
 }
 
-func (c *config) HasFile() bool {
-	return com.IsFile(CONFIG_FILE)
+func (c *coreConfig) HasFile() bool {
+	return com.IsFile(ConfigFile)
+}
+
+func newCoreConfig() *coreConfig {
+	cfg := &coreConfig{
+		App: *Vars,
+		Server: serverConfig{
+			Addr:     "0.0.0.0",
+			Port:     "3030",
+			Protocol: "http",
+		},
+		Db: dbConfig{
+			Directory: "data",
+			Index:     14,
+		},
+	}
+
+	// if config file exist, load it
+	if cfg.HasFile() {
+		cfg.ReadFile()
+	}
+	return cfg
 }

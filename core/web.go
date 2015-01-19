@@ -8,11 +8,14 @@ import (
 	"time"
 )
 
-var Tango *tango.Tango
+type coreWeb struct {
+	*tango.Tango
+	opt serverConfig
+}
 
-func init() {
-	Tango = tango.Classic()
-	Tango.Use(
+func newCoreWeb(opt serverConfig) *coreWeb {
+	t := tango.Classic()
+	t.Use(
 		renders.New(renders.Options{
 			Reload:    true,
 			Directory: "theme",
@@ -20,12 +23,17 @@ func init() {
 		xsrf.New(time.Minute*5),
 	)
 
-	Tango.Get("/theme/(.*)", new(themeAction))
+	// theme handler ,for theme static files
+	t.Get("/theme/(.*)", new(themeAction))
+	return &coreWeb{t, opt}
+}
+
+func (web *coreWeb) Run() {
+	web.Tango.Run(web.opt.Addr + ":" + web.opt.Port)
 }
 
 type themeAction struct {
 	tango.Ctx
-	//tango.Compress
 }
 
 func (t *themeAction) Get() {

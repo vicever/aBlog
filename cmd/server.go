@@ -1,33 +1,20 @@
 package cmd
 
 import (
-	"fmt"
+	"ablog/core"
 	"github.com/codegangsta/cli"
-	"github.com/fuxiaohei/ablog/core"
-	"github.com/fuxiaohei/ablog/log"
-	"github.com/lunny/tango"
 )
 
-var serverCommand = cli.Command{
-	Name:   "server",
-	Usage:  "Run own webserver to render and display public",
-	Action: Server,
-}
+var ServerCommand cli.Command = cli.Command{
+	Name:  "server",
+	Usage: "run ablog web server",
+	Action: func(ctx *cli.Context) {
+		// check db and server preparation
+		if core.Db == nil || core.Web == nil {
+			core.Log.Fatal("did you install ABlog?")
+		}
 
-func Server(_ *cli.Context) {
-	if !core.Config.HasFile() {
-		log.Fatal("please install ablog first!")
-	}
-	// read config file
-	if err := core.Config.ReadFile(); err != nil {
-		log.Fatal("start server fail : %v", err)
-	}
-
-	var (
-		server *tango.Tango = core.Tango
-		addr   string       = fmt.Sprintf("%s:%d", core.Config.Server.Addr, core.Config.Server.Port)
-	)
-
-	server.Run(addr)
-
+		// start server
+		core.Web.Run()
+	},
 }

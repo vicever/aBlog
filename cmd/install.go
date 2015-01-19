@@ -1,25 +1,23 @@
 package cmd
 
 import (
+	"ablog/core"
 	"github.com/codegangsta/cli"
-	"github.com/fuxiaohei/ablog/core"
-	"github.com/fuxiaohei/ablog/log"
 )
 
-var installCommand = cli.Command{
-	Name:   "install",
-	Usage:  "Install new ablog with default settings and data",
-	Action: Install,
-}
+var InstallCommand cli.Command = cli.Command{
+	Name:  "install",
+	Usage: "install ablog engine",
+	Action: func(_ *cli.Context) {
+		// config file is exist,
+		// it means be installed
+		if core.Config.HasFile() {
+			core.Log.Fatal("ABlog has been installed")
+		}
 
-func Install(ctx *cli.Context) {
-	if core.Config.HasFile() {
-		log.Fatal("ablog had been installed")
-	}
-
-	// write config file
-	if err := core.Config.WriteFile(); err != nil {
-		log.Fatal("ablog install : %v", err)
-	}
-
+		// write config file
+		if err := core.Config.WriteFile(); err != nil {
+			core.Log.Fatal("instaill fail : %v", err)
+		}
+	},
 }

@@ -3,7 +3,8 @@
 *.a
 *.so
 ablog
-ablog.toml
+config.toml
+config.codekit
 
 # Folders
 _obj
