@@ -56,7 +56,7 @@ func NewUser(name, password, email, role string) *User {
 func (u *User) IsSamePassword(password string) bool {
 	salt := util.MD5Short(password, "")
 	password = util.Sha256(password, salt)
-	return password == u.PasswordSalt
+	return password == u.Password
 }
 
 func generateUserID() int64 {

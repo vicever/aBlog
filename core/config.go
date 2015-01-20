@@ -48,6 +48,10 @@ func (c *coreConfig) HasFile() bool {
 	return com.IsFile(ConfigFile)
 }
 
+func (c *coreConfig) RemoveFile() {
+	os.RemoveAll(ConfigFile)
+}
+
 func newCoreConfig() *coreConfig {
 	cfg := &coreConfig{
 		App: *Vars,

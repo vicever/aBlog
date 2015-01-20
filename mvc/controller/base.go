@@ -18,4 +18,5 @@ func (a *AdminRender) Render(tpl string, v interface{}) {
 
 func Register() {
 	core.Web.Any("/login", new(LoginController))
+	core.Web.Get("/logout", new(LogoutController))
 }

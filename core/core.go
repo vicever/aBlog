@@ -20,7 +20,7 @@ func init() {
 	Config = newCoreConfig()
 
 	// prepare logger
-	Log = newCoreLogger(Config.LogFile, "ABlog", true, false)
+	Log = newCoreLogger(Config.LogFile, "[ABlog]", true, false)
 
 	// prepare cmd
 	Cmd = newCoreCmd()

@@ -34,7 +34,7 @@ func NewToken(uid int64, duration int64, from string) *Token {
 }
 
 func (tk *Token) generateValue() {
-	tk.Value = util.MD5(fmt.Sprintf("%d.%d", tk.UserId, tk.ExpireTime.Unix()), tk.From)
+	tk.Value = util.Sha256(fmt.Sprintf("%d.%d", tk.UserId, tk.ExpireTime.Unix()), tk.From)
 }
 
 // check the token expiration
