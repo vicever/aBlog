@@ -124,3 +124,40 @@ func (lgt *LogoutController) Get() {
 
 	lgt.Redirect("/login", 302)
 }
+
+/*
+===== authorize interface
+*/
+
+type Auther interface {
+	SetAuthUser(*model.User)
+	AuthFailRedirect() string
+}
+
+func AuthHandler() tango.HandlerFunc {
+	return func(ctx *tango.Context) {
+		// only apply to AuthControllerInterface
+		action, ok := ctx.Action().(Auther)
+		if !ok {
+			return
+		}
+		// get cookie, then get user
+		if cookie := ctx.Cookies().Get("authorize"); cookie != nil {
+			if token, _ := model.GetToken(cookie.Value); token != nil {
+				if user, _ := token.GetUser(); user != nil {
+					action.SetAuthUser(user)
+					ctx.Next() // remember call next
+					return
+				}
+			}
+		}
+
+		// check redirect for auth-failure
+		if redirectUrl := action.AuthFailRedirect(); redirectUrl != "" {
+			ctx.Redirect(redirectUrl, 403)
+			return
+		}
+
+		ctx.Next()
+	}
+}
