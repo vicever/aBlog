@@ -109,17 +109,9 @@ func (lgt *LogoutController) Get() {
 		}
 	}
 
-	// set a expired cookie,
-	// to make the using cookie illegal
+	// delete cookie
 	if cookie != nil {
-		cookie = &http.Cookie{
-			Name:     "authorize",
-			Value:    "",
-			Expires:  time.Now().Add(-3600 * time.Second),
-			MaxAge:   -3600,
-			HttpOnly: true,
-		}
-		lgt.Cookies().Set(cookie)
+		lgt.Cookies().Del("authorize")
 	}
 
 	lgt.Redirect("/login", 302)
@@ -134,11 +126,24 @@ type Auther interface {
 	AuthFailRedirect() string
 }
 
+type AdminAutherController struct {
+	AuthUser *model.User
+}
+
+func (aAc *AdminAutherController) SetAuthUser(u *model.User) {
+	aAc.AuthUser = u
+}
+
+func (aAc *AdminAutherController) AuthFailRedirect() string {
+	return "/login?error=fail-auth"
+}
+
 func AuthHandler() tango.HandlerFunc {
 	return func(ctx *tango.Context) {
 		// only apply to AuthControllerInterface
 		action, ok := ctx.Action().(Auther)
 		if !ok {
+			ctx.Next()
 			return
 		}
 		// get cookie, then get user
@@ -154,7 +159,7 @@ func AuthHandler() tango.HandlerFunc {
 
 		// check redirect for auth-failure
 		if redirectUrl := action.AuthFailRedirect(); redirectUrl != "" {
-			ctx.Redirect(redirectUrl, 403)
+			ctx.Redirect(redirectUrl, 302)
 			return
 		}
 

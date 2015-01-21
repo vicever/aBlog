@@ -337,20 +337,27 @@ body {
 #admin-menu ul li {
   line-height: 48px;
   padding-left: 20px;
+  border-top: 1px solid #404040;
 }
 #admin-menu ul li a {
   display: block;
 }
+#admin-menu ul li:hover {
+  background-color: #303030;
+}
 #admin-menu ul li.current {
   background-color: #282828;
 }
+#admin-menu ul li.out a {
+  color: #ff745f;
+}
 #admin-menu .avatar {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   margin-right: 12px;
 }
 #admin-menu .num {
-  background-color: #ff745f;
+  background-color: #03aafc;
   color: #FFF;
   padding: 4px 6px;
   font-size: 13px;
