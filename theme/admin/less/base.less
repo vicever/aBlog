@@ -342,19 +342,31 @@ ol{
 
 // input elements
 
+fieldset{
+  border:1px solid #DDD;
+  background-color: #F8F8F8;
+  padding: 12px;
+}
+
 input[type=text],
+input[type=url],
 input[type=password],
 input[type=email],
-input[type=search]{
+input[type=search],
+textarea{
   padding: 6px 12px;
   outline: none;
   border:1px #D0E2EA solid;
-  transition: border linear .2s;
   &:focus{
     background-color: #fffded;
     border:1px #888 solid;
   }
   min-height: 32px;
+}
+
+textarea{
+  min-width: 100px;
+  min-height: 80px;
 }
 
 input[type=submit],
@@ -370,5 +382,4 @@ button{
   }
   min-height: 32px;
   color: #FFF;
-  transition: background linear .2s;
 }

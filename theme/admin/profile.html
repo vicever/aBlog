@@ -23,7 +23,37 @@
 </nav>
 <div id="admin-main">
     <div id="profile-wrapper">
-
+        <header class="admin-main-header clearfix">
+            <h1>Your Profile</h1>
+        </header>
+        <section>
+            <form id="profile-base-form" action="/admin/profile" method="post" class="admin-general-form">
+                <p class="field">
+                    <label for="username" class="req">Username</label>
+                    <input id="username" name="username" required="required" type="text" value="{{.AuthUser.Name}}"/>
+                </p>
+                <p class="field">
+                    <label for="nickname" class="req">Nickname</label>
+                    <input id="nickname" name="nickname" required="required" type="text" value="{{.AuthUser.NickName}}"/>
+                </p>
+                <p class="field">
+                    <label for="email" class="req">Email</label>
+                    <input id="email" name="email" required="required" type="email" value="{{.AuthUser.Email}}" placeholder="your email address"/>
+                </p>
+                <p class="field">
+                    <label for="url">Url</label>
+                    <input id="url" name="url" type="url" value="{{.AuthUser.Url}}" placeholder="your url address"/>
+                </p>
+                <fieldset>
+                    <legend>Bio</legend>
+                    <textarea name="bio" id="bio" placeholder="your bio">{{.AuthUser.Bio}}</textarea>
+                </fieldset>
+                <p class="field submit">
+                    <button>Update Profile</button>
+                    {{.XsrfFormHtml}}
+                </p>
+            </form>
+        </section>
     </div>
 </div>
 </body>
