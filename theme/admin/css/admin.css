@@ -333,6 +333,14 @@ body {
   margin-right: 12px;
   display: inline-block;
 }
+.success-notice {
+  font-weight: bold;
+  color: #16b544;
+}
+.fail-notice {
+  font-weight: bold;
+  color: #de3d3d;
+}
 #admin-menu {
   height: 100%;
   width: 200px;
@@ -483,4 +491,29 @@ body {
 }
 #profile-base-form .field.submit {
   text-align: right;
+}
+#profile-base-form,
+#profile-pwd-form {
+  float: left;
+}
+#profile-pwd-form {
+  margin-left: 40px;
+  border: 1px solid #decccd;
+  background-color: #fff4f7;
+  padding: 12px 20px;
+}
+#profile-pwd-form .field {
+  margin-bottom: 18px;
+}
+#profile-pwd-form .field input {
+  height: 36px;
+}
+#profile-pwd-form .field.submit {
+  text-align: right;
+}
+#profile-pwd-form .field.submit button {
+  background-color: #ff745f;
+}
+#profile-pwd-form .field.submit button:hover {
+  background-color: #ff5a41 ;
 }

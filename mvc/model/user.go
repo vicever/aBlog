@@ -59,6 +59,14 @@ func (u *User) IsSamePassword(password string) bool {
 	return password == u.Password
 }
 
+// set new password
+func (u *User) SetNewPassword(password string) {
+	salt := util.MD5Short(password, "")
+	password = util.Sha256(password, salt)
+	u.PasswordSalt = salt
+	u.Password = password
+}
+
 func generateUserID() int64 {
 	diff := time.Now().Unix() - core.Config.InstallTime
 	return diff/300 + 1

@@ -26,8 +26,12 @@
         <header class="admin-main-header clearfix">
             <h1>Your Profile</h1>
         </header>
-        <section>
+        <section class="clearfix">
             <form id="profile-base-form" action="/admin/profile" method="post" class="admin-general-form">
+                {{if eq .IsProfileUpdate 2}}
+                <p class="success-notice">your profile is updated !!</p>{{end}}
+                {{if eq .IsProfileUpdate 1}}
+                <p class="fail-notice">update profile failed</p>{{end}}
                 <p class="field">
                     <label for="username" class="req">Username</label>
                     <input id="username" name="username" required="required" type="text" value="{{.AuthUser.Name}}"/>
@@ -50,6 +54,33 @@
                 </fieldset>
                 <p class="field submit">
                     <button>Update Profile</button>
+                    {{.XsrfFormHtml}}
+                </p>
+            </form>
+            <form id="profile-pwd-form" action="/admin/profile/password" method="post" class="admin-general-form">
+                <h4>Change Password</h4>
+                {{if eq .IsPasswordUpdate 2}}
+                <p class="success-notice">your password is updated !!</p>{{end}}
+                {{if eq .IsPasswordUpdate 1}}
+                <p class="fail-notice">update password failed</p>{{end}}
+                {{if .IsOldPasswordError}}
+                <p class="fail-notice">old password is wrong !!</p>{{end}}
+                {{if .IsConfirmPasswordError}}
+                <p class="fail-notice">confirm password is not same to new password !</p>{{end}}
+                <p class="field">
+                    <label for="old-pwd">Old</label>
+                    <input id="old-pwd" name="old-pwd" type="password" required="required"/>
+                </p>
+                <p class="field">
+                    <label for="new-pwd">New</label>
+                    <input id="new-pwd" name="new-pwd" type="password" required="required"/>
+                </p>
+                <p class="field">
+                    <label for="confirm-pwd">Confirm</label>
+                    <input id="confirm-pwd" name="confirm-pwd" type="password" required="required"/>
+                </p>
+                <p class="field submit">
+                    <button>Update Password</button>
                     {{.XsrfFormHtml}}
                 </p>
             </form>
