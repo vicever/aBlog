@@ -79,6 +79,10 @@ func (db *coreDb) HGet(key1, key2 string) ([]byte, error) {
 	return db.Db.HGet([]byte(key1), []byte(key2))
 }
 
+func (db *coreDb) HDel(key1, key2 string) error {
+	_, err := db.Db.HDel([]byte(key1), []byte(key2))
+	return err
+}
 func (db *coreDb) HGetAll(key1 string) (map[string][]byte, error) {
 	data := make(map[string][]byte)
 	pValues, err := db.Db.HGetAll([]byte(key1))

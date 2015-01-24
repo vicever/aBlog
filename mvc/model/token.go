@@ -61,6 +61,7 @@ func (tk *Token) Save() error {
 
 // save expire-time-extended token
 func (tk *Token) SaveExtend(duration int64) error {
+	tk.duration = duration
 	tk.ExpireTime.Add(time.Duration(duration) * time.Second)
 	return tk.Save()
 }

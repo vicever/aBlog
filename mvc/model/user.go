@@ -13,8 +13,8 @@ const (
 
 var (
 	user_id_key    = "user:id:%d"
-	user_email_key = "user:email:%s"
-	user_name_key  = "user:name:%s"
+	user_email_key = "user:email"
+	user_name_key  = "user:name"
 )
 
 type User struct {
@@ -83,12 +83,10 @@ func (u *User) Save() error {
 	}
 
 	// save name and email indexes
-	key = fmt.Sprintf(user_name_key, u.Name)
-	if err = core.Db.Set(key, util.Int642Bytes(u.Id)); err != nil {
+	if err = core.Db.HSet(user_name_key, u.Name, util.Int642Bytes(u.Id)); err != nil {
 		return err
 	}
-	key = fmt.Sprintf(user_email_key, u.Email)
-	if err = core.Db.Set(key, util.Int642Bytes(u.Id)); err != nil {
+	if err = core.Db.HSet(user_email_key, u.Email, util.Int642Bytes(u.Id)); err != nil {
 		return err
 	}
 
@@ -98,8 +96,7 @@ func (u *User) Save() error {
 // save new user email
 func (u *User) SaveNewEmail(email string) error {
 	// delete old index
-	key := fmt.Sprintf(user_email_key, u.Email)
-	core.Db.Del(key)
+	core.Db.HDel(user_email_key, u.Email)
 
 	// save new index
 	u.Email = email
@@ -109,8 +106,7 @@ func (u *User) SaveNewEmail(email string) error {
 // save new user name
 func (u *User) SaveNewName(name string) error {
 	// delete old index
-	key := fmt.Sprintf(user_email_key, u.Email)
-	core.Db.Del(key)
+	core.Db.HDel(user_name_key, u.Name)
 
 	// save new index
 	u.Name = name
@@ -140,17 +136,12 @@ func (u *User) Remove() error {
 	var err error
 
 	// delete indexes
-	key := fmt.Sprintf(user_name_key, u.Name)
-	if err = core.Db.Del(key); err != nil {
-		return err
-	}
-	key = fmt.Sprintf(user_email_key, u.Email)
-	if err = core.Db.Del(key); err != nil {
-		return err
-	}
+	core.Db.HDel(user_email_key, u.Email)
+
+	core.Db.HDel(user_name_key, u.Name)
 
 	// delete user data
-	key = fmt.Sprintf(user_id_key, u.Id)
+	key := fmt.Sprintf(user_id_key, u.Id)
 	if err = core.Db.Del(key); err != nil {
 		return err
 	}
@@ -173,8 +164,7 @@ func GetUserById(id int64) (*User, error) {
 
 // get user by email
 func GetUserByEmail(email string) (*User, error) {
-	key := fmt.Sprintf(user_email_key, email)
-	bytes, err := core.Db.Get(key)
+	bytes, err := core.Db.HGet(user_email_key, email)
 	if err != nil {
 		return nil, err
 	}
@@ -187,8 +177,7 @@ func GetUserByEmail(email string) (*User, error) {
 
 // get user by name
 func GetUserByName(name string) (*User, error) {
-	key := fmt.Sprintf(user_name_key, name)
-	bytes, err := core.Db.Get(key)
+	bytes, err := core.Db.HGet(user_name_key, name)
 	if err != nil {
 		return nil, err
 	}

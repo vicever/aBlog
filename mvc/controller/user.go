@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/renders"
 	"github.com/tango-contrib/xsrf"
