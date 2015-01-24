@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/lunny/tango"
-	"github.com/tango-contrib/renders"
 	"github.com/tango-contrib/xsrf"
 )
 
@@ -12,42 +11,38 @@ type AdminProfileController struct {
 	tango.Ctx
 	xsrf.Checker
 
-	AdminRender
-	AdminAutherController
+	AdminBaseController
 }
 
 func (apc *AdminProfileController) Get() {
-	vars := renders.T{
-		"AuthUser":         apc.AuthUser,
-		"XsrfFormHtml":     apc.XsrfFormHtml,
-		"IsProfileUpdate":  0,
-		"IsPasswordUpdate": 0,
-	}
+	apc.Assign("XsrfFormHtml", apc.XsrfFormHtml)
+	apc.Assign("IsProfileUpdate", 0)
+	apc.Assign("IsPasswordUpdate", 0)
 
 	// parse profile updating result
 	profileResult := apc.Req().FormValue("profile")
 	if profileResult == "update" {
-		vars["IsProfileUpdate"] = 2
+		apc.Assign("IsProfileUpdate", 2)
 	} else if profileResult != "" {
-		vars["IsProfileUpdate"] = 1
+		apc.Assign("IsProfileUpdate", 1)
 	}
 
 	// parse password updating result
 	passwordResult := apc.Req().FormValue("password")
 	switch passwordResult {
 	case "old-error":
-		vars["IsOldPasswordError"] = true
+		apc.Assign("IsOldPasswordError", true)
 	case "confirm-error":
-		vars["IsConfirmPasswordError"] = true
+		apc.Assign("IsConfirmPasswordError", true)
 	case "update":
-		vars["IsPasswordUpdate"] = 2
+		apc.Assign("IsPasswordUpdate", 2)
 	default:
 		if passwordResult != "" {
-			vars["IsPasswordUpdate"] = 1
+			apc.Assign("IsPasswordUpdate", 1)
 		}
 	}
 
-	apc.Render("profile.html", vars)
+	apc.RenderAdmin("profile.html")
 }
 
 func (apc *AdminProfileController) Post() {
@@ -72,7 +67,7 @@ type AdminPasswordController struct {
 	tango.Ctx
 	xsrf.Checker
 
-	AdminAutherController
+	AdminBaseController
 }
 
 func (apc *AdminPasswordController) Post() {

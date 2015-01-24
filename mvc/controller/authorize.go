@@ -3,7 +3,6 @@ package controller
 import (
 	"ablog/mvc/model"
 	"github.com/lunny/tango"
-	"github.com/tango-contrib/renders"
 	"github.com/tango-contrib/xsrf"
 	"net/http"
 	"time"
@@ -17,7 +16,7 @@ type LoginController struct {
 	tango.Ctx
 	xsrf.Checker
 
-	AdminRender
+	BaseController
 }
 
 func (lc *LoginController) Get() {
@@ -27,9 +26,8 @@ func (lc *LoginController) Get() {
 		return
 	}
 
-	lc.Render("login.html", renders.T{
-		"XsrfFormHtml": lc.XsrfFormHtml,
-	})
+	lc.Assign("XsrfFormHtml", lc.XsrfFormHtml)
+	lc.RenderAdmin("login.html")
 }
 
 func (lc *LoginController) isLogged() bool {
@@ -126,15 +124,17 @@ type Auther interface {
 	AuthFailRedirect() string
 }
 
-type AdminAutherController struct {
+type AdminBaseController struct {
 	AuthUser *model.User
+	BaseController
 }
 
-func (aAc *AdminAutherController) SetAuthUser(u *model.User) {
-	aAc.AuthUser = u
+func (abc *AdminBaseController) SetAuthUser(u *model.User) {
+	abc.AuthUser = u
+	abc.Assign("AuthUser", u)
 }
 
-func (aAc *AdminAutherController) AuthFailRedirect() string {
+func (abc *AdminBaseController) AuthFailRedirect() string {
 	return "/login?error=fail-auth"
 }
 

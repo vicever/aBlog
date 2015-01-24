@@ -1,0 +1,11 @@
+<nav id="admin-menu">
+    <ul>
+        <li><a href="/admin/profile"><img src="https://avatars3.githubusercontent.com/u/2142787?v=3&s=40" alt="gravatar" class="avatar"/> {{.AuthUser.Name}}</a></li>
+        <li {{if .IsArticlePage}}class="current"{{end}}><a href="">Articles</a></li>
+        <li><a href="">Pages</a></li>
+        <li><a href="#">Comments <span class="num">12</span></a></li>
+        <li><a href="">Themes</a></li>
+        <li><a href="">Settings</a></li>
+        <li class="out"><a href="/logout">Sign Out</a></li>
+    </ul>
+</nav>

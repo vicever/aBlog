@@ -1,25 +1,22 @@
 package controller
 
 import (
-	"ablog/mvc/model"
 	"github.com/lunny/tango"
+	"github.com/tango-contrib/xsrf"
 )
 
 /*
-===== admin articles controller
+===== admin article write controller
 */
 
-var _ Auther = new(AdminArticleController)
-
-type AdminArticleController struct {
+type ArticleWriteController struct {
 	tango.Ctx
-	authUser *model.User
+	xsrf.Checker
+
+	AdminBaseController
 }
 
-func (aAc *AdminArticleController) SetAuthUser(u *model.User) {
-	aAc.authUser = u
-}
-
-func (aAc *AdminArticleController) AuthFailRedirect() string {
-	return "/login?error=auth-fail"
+func (awc *ArticleWriteController) Get() {
+	awc.Assign("IsArticlePage", true)
+	awc.RenderAdmin("article_write.html")
 }
