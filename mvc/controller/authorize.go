@@ -87,7 +87,7 @@ func (lc *LoginController) Post() {
 	u.Save()
 
 	// redirect into article list-page
-	lc.Redirect("/admin/articles", 302)
+	lc.Redirect("/admin/profile", 302)
 }
 
 /*

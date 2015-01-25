@@ -78,21 +78,21 @@ func (db *coreDb) GetJson(key string, value interface{}) error {
 ===== hset
 */
 
-func (db *coreDb) HSet(key1, key2 string, value []byte) error {
+func (db *coreDb) HSet(key1 string, key2, value []byte) error {
 	_, err := db.Db.HSet([]byte(key1), []byte(key2), value)
 	return err
 }
 
-func (db *coreDb) HGet(key1, key2 string) ([]byte, error) {
+func (db *coreDb) HGet(key1 string, key2 []byte) ([]byte, error) {
 	return db.Db.HGet([]byte(key1), []byte(key2))
 }
 
-func (db *coreDb) HDel(key1, key2 string) error {
+func (db *coreDb) HDel(key1 string, key2 []byte) error {
 	_, err := db.Db.HDel([]byte(key1), []byte(key2))
 	return err
 }
 
-func (db *coreDb) HExist(key1, key2 string) bool {
+func (db *coreDb) HExist(key1 string, key2 []byte) bool {
 	bytes, _ := db.HGet(key1, key2)
 	if len(bytes) == 0 {
 		return false
@@ -100,16 +100,8 @@ func (db *coreDb) HExist(key1, key2 string) bool {
 	return true
 }
 
-func (db *coreDb) HGetAll(key1 string) (map[string][]byte, error) {
-	data := make(map[string][]byte)
-	pValues, err := db.Db.HGetAll([]byte(key1))
-	if err != nil {
-		return data, err
-	}
-	for _, v := range pValues {
-		data[string(v.Field)] = v.Value
-	}
-	return data, nil
+func (db *coreDb) HGetAll(key1 string) ([]nodb.FVPair, error) {
+	return db.Db.HGetAll([]byte(key1))
 }
 
 func (db *coreDb) HClear(key1 string) error {

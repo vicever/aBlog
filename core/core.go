@@ -29,6 +29,7 @@ func init() {
 	if Config.InstallTime > 0 {
 		Db = newCoreDb(Config.Db)
 		Web = newCoreWeb(Config.Server)
+		Model = newCoreModel()
 	}
 }
 
@@ -39,6 +40,7 @@ func Run() {
 // prepare db manually
 func PrepareDB() {
 	Db = newCoreDb(Config.Db)
+	Model = newCoreModel()
 }
 
 // prepare web server manually

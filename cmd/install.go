@@ -41,6 +41,6 @@ func createAdminUser() {
 	user := model.NewUser("admin", "admin", "admin@example.com", model.USER_ROLE_ADMIN)
 	if err := user.Save(); err != nil {
 		installFailover()
-		core.Log.Fatal("create administrator fail")
+		core.Log.Fatal("create administrator fail : %v", err)
 	}
 }

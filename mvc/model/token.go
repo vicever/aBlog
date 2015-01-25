@@ -7,13 +7,10 @@ import (
 	"time"
 )
 
-var (
-	token_value_key = "token:%s"
-)
-
 type Token struct {
+	Id         int64 `model:"pk"`
 	UserId     int64
-	Value      string
+	Value      string `model:"index"`
 	ExpireTime time.Time
 	duration   int64
 
@@ -24,6 +21,7 @@ type Token struct {
 
 func NewToken(uid int64, duration int64, from string) *Token {
 	tk := &Token{
+		Id:         generateTokenID(),
 		UserId:     uid,
 		ExpireTime: time.Now().Add(time.Duration(duration) * time.Second),
 		From:       from,
@@ -31,6 +29,11 @@ func NewToken(uid int64, duration int64, from string) *Token {
 	}
 	tk.generateValue()
 	return tk
+}
+
+func generateTokenID() int64 {
+	diff := time.Now().Unix() - core.Config.InstallTime
+	return diff
 }
 
 func (tk *Token) generateValue() {
@@ -49,14 +52,7 @@ func (tk *Token) GetUser() (*User, error) {
 
 // save token
 func (tk *Token) Save() error {
-	key := fmt.Sprintf(token_value_key, tk.Value)
-	if err := core.Db.SetJson(key, tk); err != nil {
-		return err
-	}
-	if err := core.Db.SetExpire(key, tk.duration); err != nil {
-		return err
-	}
-	return nil
+	return core.Model.Save(tk)
 }
 
 // save expire-time-extended token
@@ -68,11 +64,7 @@ func (tk *Token) SaveExtend(duration int64) error {
 
 // remove token
 func (tk *Token) Remove() error {
-	key := fmt.Sprintf(token_value_key, tk.Value)
-	if err := core.Db.Del(key); err != nil {
-		return err
-	}
-	return nil
+	return core.Model.Remove(tk)
 }
 
 // get token with expiration checking
@@ -89,13 +81,7 @@ func GetToken(value string) (*Token, error) {
 
 // must get token
 func GetTokenIgnoreExpired(value string) (*Token, error) {
-	key := fmt.Sprintf(token_value_key, value)
-	tk := &Token{}
-	if err := core.Db.GetJson(key, tk); err != nil {
-		return nil, err
-	}
-	if tk.Value != value {
-		return nil, nil
-	}
-	return tk, nil
+	tk := &Token{Value: value}
+	err := core.Model.GetBy(tk, "Value")
+	return tk, err
 }
