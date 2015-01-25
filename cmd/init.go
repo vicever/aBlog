@@ -12,6 +12,7 @@ func init() {
 	core.Cmd.Commands = []cli.Command{
 		InstallCommand,
 		ServerCommand,
+		TestCommand,
 	}
 }
 

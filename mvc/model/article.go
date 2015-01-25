@@ -8,165 +8,29 @@ import (
 	"time"
 )
 
-var (
-	article_brief_separator = "<!--more-->"
+const (
+	ARTICLE_STATUS_PUBLIC ArticlePublishStatus = "public"
+	ARTICLE_STATUS_DRAFT  ArticlePublishStatus = "draft"
 
-	article_content_key    = "article:content:%d"
-	article_meta_key       = "article:meta:%d"
-	article_slug_key       = "article:slug:%d"
-	article_short_link_key = "article:short-link:%d"
-	article_id_key         = "article:id:%d"
+	ARTICLE_CONTENT_MARKDOWN ArticleContentType = "markdown"
+	ARTICLE_CONTENT_HTML     ArticleContentType = "html"
 )
 
-type Article struct {
-	Id           int64
-	Title        string
-	SlugLink     string // customize link url
-	ShortLink    string // short link url
-	AuthorUserId int64
+type ArticlePublishStatus string
+type ArticleContentType string
 
-	CreateTime     time.Time
-	LastUpdateTime time.Time
-	PublishStatus  string
+var (
+	article_brief_seperator = "<!--more-->"
+	article_id_key          = "article:id:%d"
+	article_id_list_key     = "article:id-list"
+	article_id_pub_list_key = "article:id-pub-list"
+	article_short_key       = "article:short"
+	article_slug_key        = "article:slug"
 
-	Brief         string
-	EnableComment bool
-	FormatType    string
-
-	contentTemp string // maintain content if no saved
-}
-
-func NewArticle(title string, author int64, status string, format string, content string) *Article {
-	article := &Article{
-		Title:         title,
-		AuthorUserId:  author,
-		PublishStatus: status,
-		FormatType:    format,
-		contentTemp:   content,
-
-		CreateTime:     time.Now(),
-		LastUpdateTime: time.Now(),
-		ShortLink:      generateArticleShortLink(title),
-		Id:             generateArticleID(0),
-	}
-	return article
-}
-
-func (a *Article) Save() error {
-	// save article data
-	var err error
-	key := fmt.Sprintf(article_id_key, a.Id)
-	if err = core.Db.SetJson(key, a); err != nil {
-		return err
-	}
-
-	// save indexes
-	if err = a.saveIndexes(); err != nil {
-		return err
-	}
-
-	// save meta
-	meta := newArticleMeta(a.Id, int64(len(a.contentTemp)))
-	if err = meta.Save(); err != nil {
-		return err
-	}
-
-	// save whole content
-	cnt := newArticleContent(a.Id, a.contentTemp)
-	if err = cnt.Save(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (a *Article) saveIndexes() error {
-	// short link index
-	key := fmt.Sprintf(article_short_link_key, a.ShortLink)
-	if err := core.Db.Set(key, util.Int642Bytes(a.Id)); err != nil {
-		return err
-	}
-
-	// slug link index
-	key = fmt.Sprintf(article_slug_key, a.SlugLink)
-	if err := core.Db.Set(key, util.Int642Bytes(a.Id)); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *Article) removeIndexes() error {
-	key := fmt.Sprintf(article_short_link_key, a.ShortLink)
-	if err := core.Db.Del(key); err != nil {
-		return err
-	}
-
-	key = fmt.Sprintf(article_slug_key, a.SlugLink)
-	if err := core.Db.Del(key); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *Article) Remove() error {
-	var err error
-	// remove article
-	key := fmt.Sprintf(article_id_key, a.Id)
-	if err = core.Db.Del(key); err != nil {
-		return err
-	}
-
-	// remove meta
-	if meta, _ := GetArticleMeta(a.Id); meta != nil {
-		if err = meta.Remove(); err != nil {
-			return err
-		}
-	}
-
-	// remove content
-	if cnt, _ := GetArticleContent(a.Id); cnt != nil {
-		if err = cnt.Remove(); err != nil {
-			return err
-		}
-	}
-
-	// remove indexes
-	return a.removeIndexes()
-}
-
-// replace current article data into existing article by id
-func (a *Article) Replace(articleId int64) error {
-	a.Id = articleId
-	// overwrite article data
-	var err error
-	key := fmt.Sprintf(article_id_key, a.Id)
-	if err = core.Db.SetJson(key, a); err != nil {
-		return err
-	}
-
-	// overwrite indexes
-	if err = a.saveIndexes(); err != nil {
-		return err
-	}
-
-	// when replacing, refresh meta instead of overwrite
-	meta, err := GetArticleMeta(articleId)
-	if err != nil {
-		return err
-	}
-	meta.CalReadTime(int64(len(a.contentTemp)))
-	if err = meta.Save(); err != nil {
-		return err
-	}
-
-	// overwrite whole content
-	cnt := newArticleContent(a.Id, a.contentTemp)
-	if err = cnt.Save(); err != nil {
-		return err
-	}
-
-	return nil
-}
+	article_content_key   = "article:content:%d"
+	article_read_meta_key = "article:read:%d"
+	article_hit_meta_key  = "article:hit:%d"
+)
 
 func generateArticleID(offset int64) int64 {
 	diff := time.Now().Unix() - core.Config.InstallTime
@@ -177,117 +41,284 @@ func generateArticleID(offset int64) int64 {
 	return diff/1800 + 1 + offset
 }
 
-func generateArticleShortLink(title string) string {
+func generateArticleShort(title string) string {
 	short := util.MD5(title, fmt.Sprint(time.Now().UnixNano()))[0:8]
-	key := fmt.Sprintf(article_short_link_key, short)
-	if core.Db.Exist(key) {
-		return generateArticleShortLink(title)
+	if core.Db.HExist(article_short_key, short) {
+		return generateArticleShort(title)
 	}
 	return short
 }
 
+// article data struct
+type Article struct {
+	Id       int64
+	Title    string
+	Slug     string
+	Short    string
+	AuthorId int64 // article author user id
+
+	CreateTime     time.Time
+	LastUpdateTime time.Time
+
+	PublishStatus ArticlePublishStatus
+
+	BriefContent string
+	ContentType  ArticleContentType
+
+	contentTemp string // content temp variable
+
+	EnableComment bool // enable comment
+
+	readMeta *ArticleReadMeta // dynamic loading, not auto-load
+	hitMeta  *ArticleHitMeta
+	content  *ArticleContent
+}
+
+func NewArticle(title, slug, content string, contentType ArticleContentType, status ArticlePublishStatus, author int64) *Article {
+	a := &Article{
+		Id:             generateArticleID(0),
+		Title:          title,
+		Slug:           slug,
+		Short:          generateArticleShort(title),
+		AuthorId:       author,
+		CreateTime:     time.Now(),
+		LastUpdateTime: time.Now(),
+		PublishStatus:  status,
+		BriefContent:   content, // use whole content as brief if first new
+		ContentType:    contentType,
+		contentTemp:    content,
+		EnableComment:  true,
+	}
+	a.setBrief()
+	return a
+}
+
+func (a *Article) setBrief() {
+	if strings.Contains(a.contentTemp, article_brief_seperator) {
+		tmp := strings.Split(a.contentTemp, article_brief_seperator)
+		a.BriefContent = tmp[0]
+	}
+}
+
 /*
-===== article meta, including reads count, comments count and read time info
+===== save article
+*/
+func (a *Article) Save() error {
+	var err error
+	// save article data
+	if err = a.saveArticle(); err != nil {
+		return err
+	}
+	// save content
+	if err = a.saveContent(); err != nil {
+		return err
+	}
+	// save indexes
+	if err = a.saveIndexes(); err != nil {
+		return err
+	}
+	// save meta
+	if err = a.saveHitMeta(); err != nil {
+		return err
+	}
+	if err = a.saveReadMeta(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *Article) saveArticle() error {
+	key := fmt.Sprintf(article_id_key, a.Id)
+	return core.Db.SetJson(key, a)
+}
+
+func (a *Article) saveIndexes() error {
+	var err error
+	// save short index
+	if err = core.Db.HSet(article_short_key, a.Short, util.Int642Bytes(a.Id)); err != nil {
+		return err
+	}
+	// save slug index
+	if err = core.Db.HSet(article_slug_key, a.Slug, util.Int642Bytes(a.Id)); err != nil {
+		return err
+	}
+	// save id list index with short
+	if err = core.Db.ZSet(article_id_list_key, a.Id, []byte(a.Short)); err != nil {
+		return err
+	}
+	if a.PublishStatus == ARTICLE_STATUS_PUBLIC {
+		if err = core.Db.ZSet(article_id_pub_list_key, a.Id, []byte(a.Short)); err != nil {
+			return err
+		}
+	} else {
+		if err = core.Db.ZDel(article_id_pub_list_key, []byte(a.Short)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *Article) saveContent() error {
+	a.content = &ArticleContent{
+		ArticleId:   a.Id,
+		ContentType: a.ContentType,
+		Content:     a.contentTemp,
+	}
+	key := fmt.Sprintf(article_content_key, a.Id)
+	return core.Db.SetJson(key, a.content)
+}
+
+func (a *Article) saveReadMeta() error {
+	a.readMeta = &ArticleReadMeta{
+		Words: util.WordCount(a.contentTemp),
+	}
+	a.readMeta.ReadingTime = util.ReadingTimeCount(a.readMeta.Words)
+	key := fmt.Sprintf(article_read_meta_key, a.Id)
+	return core.Db.SetJson(key, a.readMeta)
+}
+
+func (a *Article) saveHitMeta() error {
+	a.hitMeta = &ArticleHitMeta{1, 0}
+	key := fmt.Sprintf(article_hit_meta_key, a.Id)
+	return core.Db.SetJson(key, a.hitMeta)
+}
+
+/*
+===== remove article
 */
 
-type ArticleMeta struct {
-	ArticleId int64
-	Comments  int64
-	Reads     int64
-	Words     int64 // words count
-	ReadTime  int64 // proper read time
-}
-
-func newArticleMeta(articleId int64, words int64) *ArticleMeta {
-	meta := &ArticleMeta{
-		ArticleId: articleId,
-		Comments:  0,
-		Reads:     1,
+func (a *Article) Remove() error {
+	var err error
+	// remove article data
+	if err = a.removeArticle(); err != nil {
+		return err
 	}
-	meta.CalReadTime(words)
-	return meta
-}
-
-func GetArticleMeta(articleId int64) (*ArticleMeta, error) {
-	key := fmt.Sprintf(article_meta_key, articleId)
-	meta := &ArticleMeta{}
-	if err := core.Db.GetJson(key, meta); err != nil {
-		return nil, err
+	// remove content
+	if err = a.removeContent(); err != nil {
+		return err
 	}
-	if articleId != meta.ArticleId {
-		return nil, nil
+	// remove indexes
+	if err = a.removeContent(); err != nil {
+		return err
 	}
-	return meta, nil
+	// remove meta
+	if err = a.removeContent(); err != nil {
+		return err
+	}
+	if err = a.removeContent(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (aMeta *ArticleMeta) Save() error {
-	key := fmt.Sprintf(article_meta_key, aMeta.ArticleId)
-	return core.Db.SetJson(key, aMeta)
-}
-
-func (aMeta *ArticleMeta) Remove() error {
-	key := fmt.Sprintf(article_meta_key, aMeta.ArticleId)
+func (a *Article) removeArticle() error {
+	key := fmt.Sprintf(article_id_key, a.Id)
 	return core.Db.Del(key)
 }
 
-// increase comments and reads count
-func (aMeta *ArticleMeta) Incr(comments, reads int64) {
-	aMeta.Comments += comments
-	aMeta.Reads += reads
+func (a *Article) removeIndexes() error {
+	var err error
+	// save short index
+	if err = core.Db.HDel(article_short_key, a.Short); err != nil {
+		return err
+	}
+	// save slug index
+	if err = core.Db.HDel(article_slug_key, a.Slug); err != nil {
+		return err
+	}
+	// save id list index with short
+	if err = core.Db.ZDel(article_id_list_key, []byte(a.Short)); err != nil {
+		return err
+	}
+	if a.PublishStatus == ARTICLE_STATUS_PUBLIC {
+		if err = core.Db.ZDel(article_id_pub_list_key, []byte(a.Short)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-// calculate read time by word counts
-func (aMeta *ArticleMeta) CalReadTime(wordCount int64) {
-	aMeta.Words = wordCount
-	aMeta.ReadTime = wordCount / 10 // todo : how to calculate read time and how to display it
+func (a *Article) removeContent() error {
+	key := fmt.Sprintf(article_content_key, a.Id)
+	return core.Db.Del(key)
+}
+
+func (a *Article) removeReadMeta() error {
+	key := fmt.Sprintf(article_read_meta_key, a.Id)
+	return core.Db.Del(key)
+}
+
+func (a *Article) removeHitMeta() error {
+	key := fmt.Sprintf(article_hit_meta_key, a.Id)
+	return core.Db.Del(key)
 }
 
 /*
-===== article content, saving whole text for article
+===== update article
 */
+
+func (a *Article) UpdateTo(id int64) error {
+	oldArticle, err := GetArticleById(id)
+	if err != nil || oldArticle == nil {
+		return err
+	}
+	// overwrite some data by old article
+	a.Id = oldArticle.Id
+	a.Short = oldArticle.Short
+
+	// clean indexes
+	if err = a.removeIndexes(); err != nil {
+		return err
+	}
+
+	// save article data
+	if err = a.saveArticle(); err != nil {
+		return err
+	}
+	// save content
+	if err = a.saveContent(); err != nil {
+		return err
+	}
+	// save indexes
+	if err = a.saveIndexes(); err != nil {
+		return err
+	}
+	if err = a.saveReadMeta(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type ArticleReadMeta struct {
+	Words       int64
+	ReadingTime int64
+}
+
+type ArticleHitMeta struct {
+	Hits     int64
+	Comments int64
+}
 
 type ArticleContent struct {
-	ArticleId int64
-	Content   string
+	ArticleId   int64
+	Content     string
+	ContentType ArticleContentType
 }
 
-func newArticleContent(articleId int64, content string) *ArticleContent {
-	return &ArticleContent{
-		ArticleId: articleId,
-		Content:   content,
-	}
-}
+/*
+===== get article
+*/
 
-func GetArticleContent(articleId int64) (*ArticleContent, error) {
-	key := fmt.Sprintf(article_content_key, articleId)
-	cnt := &ArticleContent{
-		ArticleId: articleId,
-	}
-	bytes, err := core.Db.Get(key)
-	if err != nil {
+func GetArticleById(id int64) (*Article, error) {
+	key := fmt.Sprintf(article_id_key, id)
+	a := new(Article)
+	if err := core.Db.GetJson(key, a); err != nil {
 		return nil, err
 	}
-	cnt.Content = string(bytes)
-	return cnt, nil
-}
-
-// save article's content
-func (aCnt *ArticleContent) Save() error {
-	key := fmt.Sprintf(article_content_key, aCnt.ArticleId)
-	return core.Db.Set(key, []byte(aCnt.Content))
-}
-
-// get brief from whole content
-func (aCnt *ArticleContent) GetBrief() string {
-	contentSlice := strings.Split(aCnt.Content, article_brief_separator)
-	if len(contentSlice) != 2 {
-		return ""
+	if a.Id != id {
+		return nil, nil
 	}
-	return contentSlice[0]
-}
+	return a, nil
 
-// remove content
-func (aCnt *ArticleContent) Remove() error {
-	key := fmt.Sprintf(article_content_key, aCnt.ArticleId)
-	return core.Db.Del(key)
 }

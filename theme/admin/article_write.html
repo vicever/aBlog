@@ -6,14 +6,39 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
     <meta name="renderer" content="webkit" />
     <meta http-equiv="Cache-Control" content="no-siteapp" />
-    <title>Profile - ABlog</title>
+    <title>Write Article - ABlog</title>
     <link rel="stylesheet" href="/theme/admin/css/admin.css"/>
+    <link rel="stylesheet" href="/theme/admin/css/editor.css"/>
+    <script src="/theme/admin/js/jquery-1.11.2.min.js"></script>
+    <script src="/theme/admin/js/marked.js"></script>
+    <script src="/theme/admin/js/editor.js"></script>
 </head>
 <body>
 {{template "admin/menu.html" .}}
 <div id="admin-main">
     <div id="article-write-wrapper">
+        <section>
+            <form id="article-write-form" action="/admin/article/write" method="post">
+                <input id="article-title" type="text" name="title" required="required" placeholder="article title"/>
+                <textarea name="content" id="article-textarea" placeholder="content here..."></textarea>
+                <p class="field clearfix">
+                    <input id="article-tags" name="tags" type="text" placeholder="article tags"/>
+                    <label for="is-private">
+                        <input id="is-private" name="private" type="checkbox" value="1"/>Private
+                    </label>
+                    <button class="submit">Save Article</button>
+                </p>
+            </form>
+        </section>
     </div>
 </div>
+<script>
+    $(function(){
+        var editor = new Editor({
+            element: document.getElementById("article-textarea")
+        });
+        editor.render();
+    })
+</script>
 </body>
 </html>
