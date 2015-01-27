@@ -15,9 +15,13 @@ type coreModel struct {
 }
 
 type coreModelMeta struct {
-	Pk     string // pk field, need int64
-	Index  map[string]string
-	Unique map[string]string
+	Name       string
+	Pk         string // pk field, need int64
+	PkKey      string
+	Index      map[string]string
+	IndexKeys  map[string]string
+	Unique     map[string]string
+	UniqueKeys map[string]string
 }
 
 func newCoreModel() *coreModel {
@@ -29,12 +33,19 @@ func (m *coreModel) Register(values ...interface{}) error {
 	for _, value := range values {
 		rType := reflect.TypeOf(value).Elem()
 		fieldNum := rType.NumField()
-		meta := coreModelMeta{"", make(map[string]string), make(map[string]string)}
+		meta := coreModelMeta{
+			Name:       rType.String(),
+			Index:      make(map[string]string),
+			IndexKeys:  make(map[string]string),
+			Unique:     make(map[string]string),
+			UniqueKeys: make(map[string]string),
+		}
 		for i := 0; i < fieldNum; i++ {
 			rField := rType.Field(i)
 			tag := rField.Tag.Get("model")
 			if tag == "pk" && rField.Type.String() == "int64" {
 				meta.Pk = rField.Name
+				meta.PkKey = fmt.Sprintf("%s:%s", meta.Name, meta.Pk)
 				continue
 			}
 			if tag == "index" {
@@ -42,6 +53,7 @@ func (m *coreModel) Register(values ...interface{}) error {
 				if rField.Type.String() == "slice" && rField.Type.Elem().String() == "byte" {
 					meta.Index[rField.Name] = "[]byte"
 				}
+				meta.IndexKeys[rField.Name] = fmt.Sprintf("%s:%s", meta.Name, rField.Name)
 				continue
 			}
 			if tag == "unique" {
@@ -49,6 +61,7 @@ func (m *coreModel) Register(values ...interface{}) error {
 				if rField.Type.String() == "slice" && rField.Type.Elem().String() == "byte" {
 					meta.Unique[rField.Name] = "[]byte"
 				}
+				meta.UniqueKeys[rField.Name] = fmt.Sprintf("%s:%s", meta.Name, rField.Name)
 				continue
 			}
 		}
@@ -77,14 +90,14 @@ func (m *coreModel) Save(v interface{}) error {
 	pkValue := rfv.Int()
 	pkBytes := util.Int642Bytes(pkValue)
 
-	key := fmt.Sprintf("%s:%s:%d", typeName, meta.Pk, pkValue)
+	key := fmt.Sprintf("%s:%d", meta.PkKey, pkValue)
 	if err := Db.SetJson(key, v); err != nil {
 		return err
 	}
 
 	// save pk list
 	if err := Db.ZSet(
-		fmt.Sprintf("%s:%s", typeName, meta.Pk), pkValue, pkBytes); err != nil {
+		meta.PkKey, pkValue, pkBytes); err != nil {
 		return err
 	}
 
@@ -92,12 +105,11 @@ func (m *coreModel) Save(v interface{}) error {
 	for uniqueKey, uniqueType := range meta.Unique {
 		rfv := rv.FieldByName(uniqueKey)
 		bytes := reflectValue2Bytes(rfv, uniqueType)
-		key := fmt.Sprintf("%s:%s", typeName, uniqueKey)
 		// check unique
-		if b, _ := Db.HGet(key, bytes); len(b) > 0 && util.Bytes2Int64(b) != pkValue {
+		if b, _ := Db.HGet(meta.UniqueKeys[uniqueKey], bytes); len(b) > 0 && util.Bytes2Int64(b) != pkValue {
 			return errors.New(typeName + "'s " + uniqueKey + " is conflicted")
 		}
-		if err := Db.HSet(key, bytes, pkBytes); err != nil {
+		if err := Db.HSet(meta.UniqueKeys[uniqueKey], bytes, pkBytes); err != nil {
 			return err
 		}
 	}
@@ -106,8 +118,7 @@ func (m *coreModel) Save(v interface{}) error {
 	for indexKey, indexType := range meta.Index {
 		rfv := rv.FieldByName(indexKey)
 		bytes := reflectValue2Bytes(rfv, indexType)
-		key := fmt.Sprintf("%s:%s", typeName, indexKey)
-		if err := Db.HSet(key, bytes, pkBytes); err != nil {
+		if err := Db.HSet(meta.IndexKeys[indexKey], bytes, pkBytes); err != nil {
 			return err
 		}
 	}
@@ -131,14 +142,14 @@ func (m *coreModel) Remove(v interface{}) error {
 	pkValue := rfv.Int()
 	pkBytes := util.Int642Bytes(pkValue)
 
-	key := fmt.Sprintf("%s:%s:%d", typeName, meta.Pk, pkValue)
+	key := fmt.Sprintf("%s:%d", meta.PkKey, pkValue)
 	if err := Db.Del(key); err != nil {
 		return err
 	}
 
 	// delete pk list
 	if err := Db.ZDel(
-		fmt.Sprintf("%s:%s", typeName, meta.Pk), pkBytes); err != nil {
+		meta.PkKey, pkBytes); err != nil {
 		return err
 	}
 
@@ -146,8 +157,7 @@ func (m *coreModel) Remove(v interface{}) error {
 	for uniqueKey, uniqueType := range meta.Unique {
 		rfv := rv.FieldByName(uniqueKey)
 		bytes := reflectValue2Bytes(rfv, uniqueType)
-		key := fmt.Sprintf("%s:%s", typeName, uniqueKey)
-		if err := Db.HDel(key, bytes); err != nil {
+		if err := Db.HDel(meta.UniqueKeys[uniqueKey], bytes); err != nil {
 			return err
 		}
 	}
@@ -156,8 +166,7 @@ func (m *coreModel) Remove(v interface{}) error {
 	for indexKey, indexType := range meta.Unique {
 		rfv := rv.FieldByName(indexKey)
 		bytes := reflectValue2Bytes(rfv, indexType)
-		key := fmt.Sprintf("%s:%s", typeName, indexKey)
-		if err := Db.HDel(key, bytes); err != nil {
+		if err := Db.HDel(meta.IndexKeys[indexKey], bytes); err != nil {
 			return err
 		}
 	}
@@ -167,8 +176,7 @@ func (m *coreModel) Remove(v interface{}) error {
 func (m *coreModel) Get(v interface{}) error {
 	// get meta
 	rv := reflect.ValueOf(v).Elem()
-	typeName := rv.Type().String()
-	meta, ok := m.models[typeName]
+	meta, ok := m.models[rv.Type().String()]
 	if !ok {
 		return errors.New("unregistered value")
 	}
@@ -178,7 +186,7 @@ func (m *coreModel) Get(v interface{}) error {
 	pkValue := rfv.Int()
 
 	// to value
-	key := fmt.Sprintf("%s:%s:%d", typeName, meta.Pk, pkValue)
+	key := fmt.Sprintf("%s:%d", meta.PkKey, pkValue)
 	return Db.GetJson(key, v)
 }
 

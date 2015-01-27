@@ -68,7 +68,6 @@ func generateUserID() int64 {
 // save user data
 func (u *User) Save() error {
 	return core.Model.Save(u)
-	return nil
 }
 
 func (u *User) Update() error {
