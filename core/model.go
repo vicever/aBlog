@@ -11,64 +11,126 @@ import (
 var Model *coreModel
 
 type coreModel struct {
-	models map[string]coreModelMeta
+	models map[string]*coreModelMeta
 }
 
 type coreModelMeta struct {
-	Name       string
-	Pk         string // pk field, need int64
-	PkKey      string
-	Index      map[string]string
-	IndexKeys  map[string]string
+	Name string
+
+	Pk    string // pk field, need int64
+	PkKey string
+
+	Index     map[string]string
+	IndexKeys map[string]string
+
 	Unique     map[string]string
 	UniqueKeys map[string]string
+
+	One2One   map[string]string
+	IsOne2One bool
+
+	One2N    map[string]string
+	One2N_To []string
 }
 
 func newCoreModel() *coreModel {
-	return &coreModel{make(map[string]coreModelMeta)}
+	return &coreModel{make(map[string]*coreModelMeta)}
+}
+
+func (m *coreModel) registerType(rType reflect.Type, isPk bool) error {
+	fieldNum := rType.NumField()
+	meta := coreModelMeta{
+		Name: rType.String(),
+	}
+	for i := 0; i < fieldNum; i++ {
+		rField := rType.Field(i)
+		tag := rField.Tag.Get("model")
+
+		// pk tag
+		if tag == "pk" && rField.Type.Kind() == reflect.Int64 {
+			meta.Pk = rField.Name
+			meta.PkKey = fmt.Sprintf("%s:%s", meta.Name, meta.Pk)
+			continue
+		}
+
+		// unique
+		if tag == "unique" {
+			if len(meta.Unique) == 0 {
+				meta.Unique = make(map[string]string)
+				meta.UniqueKeys = make(map[string]string)
+			}
+			meta.Unique[rField.Name] = rField.Type.String()
+			if rField.Type.Kind() == reflect.Slice && rField.Type.Elem().String() == "byte" {
+				meta.Unique[rField.Name] = "[]byte"
+			}
+			meta.UniqueKeys[rField.Name] = fmt.Sprintf("%s:%s", meta.Name, rField.Name)
+			continue
+		}
+
+		// index tag
+		if tag == "index" {
+			if len(meta.Index) == 0 {
+				meta.Index = make(map[string]string)
+				meta.IndexKeys = make(map[string]string)
+			}
+			meta.Index[rField.Name] = rField.Type.String()
+			if rField.Type.Kind() == reflect.Slice && rField.Type.Elem().String() == "byte" {
+				meta.Index[rField.Name] = "[]byte"
+			}
+			meta.IndexKeys[rField.Name] = fmt.Sprintf("%s:%s", meta.Name, rField.Name)
+			continue
+		}
+
+		// 1-1 tag
+		if tag == "1-1" {
+			if rField.Type.Kind() != reflect.Ptr || rField.Type.Elem().Kind() != reflect.Struct {
+				return errors.New(rType.String() + "'s 1-1 field need struct point")
+			}
+			if len(meta.One2One) == 0 {
+				meta.One2One = make(map[string]string)
+			}
+			m.registerType(rField.Type.Elem(), false)
+
+			name := rField.Type.Elem().String()
+			meta.One2One[rField.Name] = name
+			m.models[name].IsOne2One = true
+		}
+
+		// 1-n tag
+		if tag == "1-n" {
+			if rField.Type.Kind() != reflect.Slice || rField.Type.Elem().Kind() != reflect.Ptr || rField.Type.Elem().Elem().Kind() != reflect.Struct {
+				return errors.New(rType.String() + "'s 1-1 field need struct point slice")
+			}
+			if len(meta.One2N) == 0 {
+				meta.One2N = make(map[string]string)
+			}
+			m.registerType(rField.Type.Elem().Elem(), true)
+
+			name := rField.Type.Elem().Elem().String()
+			meta.One2N[rField.Name] = name
+
+			if len(m.models[name].One2N_To) == 0 {
+				m.models[name].One2N_To = []string{meta.Name}
+			} else {
+				m.models[name].One2N_To = append(m.models[name].One2N_To, meta.Name)
+			}
+		}
+	}
+	if isPk && meta.Pk == "" {
+		return errors.New(rType.String() + " need pk field")
+	}
+	m.models[rType.String()] = &meta
+	return nil
 }
 
 // register value
 func (m *coreModel) Register(values ...interface{}) error {
 	for _, value := range values {
 		rType := reflect.TypeOf(value).Elem()
-		fieldNum := rType.NumField()
-		meta := coreModelMeta{
-			Name:       rType.String(),
-			Index:      make(map[string]string),
-			IndexKeys:  make(map[string]string),
-			Unique:     make(map[string]string),
-			UniqueKeys: make(map[string]string),
-		}
-		for i := 0; i < fieldNum; i++ {
-			rField := rType.Field(i)
-			tag := rField.Tag.Get("model")
-			if tag == "pk" && rField.Type.String() == "int64" {
-				meta.Pk = rField.Name
-				meta.PkKey = fmt.Sprintf("%s:%s", meta.Name, meta.Pk)
-				continue
-			}
-			if tag == "index" {
-				meta.Index[rField.Name] = rField.Type.String()
-				if rField.Type.String() == "slice" && rField.Type.Elem().String() == "byte" {
-					meta.Index[rField.Name] = "[]byte"
-				}
-				meta.IndexKeys[rField.Name] = fmt.Sprintf("%s:%s", meta.Name, rField.Name)
-				continue
-			}
-			if tag == "unique" {
-				meta.Unique[rField.Name] = rField.Type.String()
-				if rField.Type.String() == "slice" && rField.Type.Elem().String() == "byte" {
-					meta.Unique[rField.Name] = "[]byte"
-				}
-				meta.UniqueKeys[rField.Name] = fmt.Sprintf("%s:%s", meta.Name, rField.Name)
-				continue
-			}
-		}
-		if meta.Pk == "" {
-			return errors.New(rType.String() + " need pk field")
-		}
-		m.models[rType.String()] = meta
+		m.registerType(rType, true)
+	}
+	for _, m := range Model.models {
+		fmt.Printf("%#v\n", m)
 	}
 	return nil
 }
@@ -85,23 +147,13 @@ func (m *coreModel) Save(v interface{}) error {
 		}
 		meta = m.models[typeName]
 	}
-	// save data with pk value
+
+	// get pk value and bytes
 	rfv := rv.FieldByName(meta.Pk)
 	pkValue := rfv.Int()
 	pkBytes := util.Int642Bytes(pkValue)
 
-	key := fmt.Sprintf("%s:%d", meta.PkKey, pkValue)
-	if err := Db.SetJson(key, v); err != nil {
-		return err
-	}
-
-	// save pk list
-	if err := Db.ZSet(
-		meta.PkKey, pkValue, pkBytes); err != nil {
-		return err
-	}
-
-	// save unique
+	// save unique, check unique first
 	for uniqueKey, uniqueType := range meta.Unique {
 		rfv := rv.FieldByName(uniqueKey)
 		bytes := reflectValue2Bytes(rfv, uniqueType)
@@ -114,6 +166,18 @@ func (m *coreModel) Save(v interface{}) error {
 		}
 	}
 
+	// save data with pk value
+	key := fmt.Sprintf("%s:%d", meta.PkKey, pkValue)
+	if err := Db.SetJson(key, v); err != nil {
+		return err
+	}
+
+	// save pk list
+	if err := Db.ZSet(
+		meta.PkKey, pkValue, pkBytes); err != nil {
+		return err
+	}
+
 	// save index
 	for indexKey, indexType := range meta.Index {
 		rfv := rv.FieldByName(indexKey)
@@ -122,6 +186,49 @@ func (m *coreModel) Save(v interface{}) error {
 			return err
 		}
 	}
+
+	// save 1-1
+	for o2oKey, o2oMeta := range meta.One2One {
+		rfv := rv.FieldByName(o2oKey)
+		// only save not null value
+		if !rfv.IsNil() {
+			key := fmt.Sprintf(o2oMeta+":%d", pkValue)
+			if err := Db.SetJson(key, rfv.Interface()); err != nil {
+				return err
+			}
+		}
+	}
+
+	// save 1-n
+	for o2nKey, o2nMeta := range meta.One2N {
+		// get value
+		rfv := rv.FieldByName(o2nKey)
+		if rfv.IsNil() {
+			continue
+		}
+		// get slice length
+		l := rfv.Len()
+		if l == 0 {
+			continue
+		}
+
+		for i := 0; i < l; i++ {
+			rfiv := rfv.Index(i)
+			m.Save(rfiv.Interface())
+			rfiv2 := rfiv.Elem().FieldByName(m.models[o2nMeta].Pk)
+			pkValue2 := rfiv2.Int()
+
+			key1 := fmt.Sprintf("%s:%d:%s", typeName, pkValue, o2nMeta)
+			if err := Db.ZSet(key1, pkValue2, util.Int642Bytes(pkValue2)); err != nil {
+				return err
+			}
+			key2 := fmt.Sprintf("%s:%d:%s", o2nMeta, pkValue2, typeName)
+			if err := Db.ZSet(key2, pkValue, util.Int642Bytes(pkValue)); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -135,6 +242,9 @@ func (m *coreModel) Remove(v interface{}) error {
 			return err
 		}
 		meta = m.models[typeName]
+	}
+	if meta.IsOne2One {
+		return errors.New(typeName + " belongs to another model")
 	}
 
 	// remove data with pk value
@@ -163,13 +273,39 @@ func (m *coreModel) Remove(v interface{}) error {
 	}
 
 	// delete index
-	for indexKey, indexType := range meta.Unique {
+	for indexKey, indexType := range meta.Index {
 		rfv := rv.FieldByName(indexKey)
 		bytes := reflectValue2Bytes(rfv, indexType)
 		if err := Db.HDel(meta.IndexKeys[indexKey], bytes); err != nil {
 			return err
 		}
 	}
+
+	// delete 1-1
+	for _, o2oMeta := range meta.One2One {
+		key := fmt.Sprintf(o2oMeta+":%d", pkValue)
+		if err := Db.Del(key); err != nil {
+			return err
+		}
+	}
+
+	for _, o2nMeta := range meta.One2N {
+		key := fmt.Sprintf("%s:%d:%s", typeName, pkValue, o2nMeta)
+		all, err := Db.ZAllAsc(key)
+		if err != nil {
+			return err
+		}
+		for _, a := range all {
+			key2 := fmt.Sprintf("%s:%d:%s", o2nMeta, a.Score, typeName)
+			if err := Db.ZDel(key2, pkBytes); err != nil {
+				return err
+			}
+		}
+		if err := Db.ZClear(key); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -187,7 +323,46 @@ func (m *coreModel) Get(v interface{}) error {
 
 	// to value
 	key := fmt.Sprintf("%s:%d", meta.PkKey, pkValue)
-	return Db.GetJson(key, v)
+	if err := Db.GetJson(key, v); err != nil {
+		return err
+	}
+
+	// get 1-1 data
+	if len(meta.One2One) > 0 {
+		for o2oKey, o2oMeta := range meta.One2One {
+			key := fmt.Sprintf(o2oMeta+":%d", pkValue)
+			rfv := rv.FieldByName(o2oKey)
+			rv2 := reflect.New(rfv.Type().Elem())
+			if err := Db.GetJson(key, rv2.Interface()); err != nil {
+				return err
+			}
+			rfv.Set(rv2)
+		}
+	}
+
+	// get 1-n data
+	if len(meta.One2N) > 0 {
+		for o2nKey, o2nMeta := range meta.One2N {
+			key := fmt.Sprintf("%s:%d:%s", meta.Name, pkValue, o2nMeta)
+			rfv := rv.FieldByName(o2nKey)
+			all, err := Db.ZAllAsc(key)
+			if err != nil {
+				return err
+			}
+			meta2 := m.models[o2nMeta]
+			sliceRv := reflect.New(reflect.SliceOf(rfv.Type().Elem())).Elem()
+			for _, a := range all {
+				rv2 := reflect.New(rfv.Type().Elem().Elem())
+				key := fmt.Sprintf("%s:%s:%d", o2nMeta, meta2.Pk, a.Score)
+				if err := Db.GetJson(key, rv2.Interface()); err != nil {
+					return err
+				}
+				sliceRv = reflect.Append(sliceRv, rv2)
+			}
+			rfv.Set(sliceRv)
+		}
+	}
+	return nil
 }
 
 func (m *coreModel) GetBy(v interface{}, field string) error {
