@@ -29,8 +29,8 @@ type coreModelMeta struct {
 	One2One   map[string]string
 	IsOne2One bool
 
-	One2N    map[string]string
-	One2N_To []string
+	One2N map[string]string
+	N2One []string
 }
 
 func newCoreModel() *coreModel {
@@ -109,10 +109,11 @@ func (m *coreModel) registerType(rType reflect.Type, isPk bool) error {
 			name := rField.Type.Elem().Elem().String()
 			meta.One2N[rField.Name] = name
 
-			if len(m.models[name].One2N_To) == 0 {
-				m.models[name].One2N_To = []string{meta.Name}
+			// 1-n means n-1 to positive meta
+			if len(m.models[name].N2One) == 0 {
+				m.models[name].N2One = []string{meta.Name}
 			} else {
-				m.models[name].One2N_To = append(m.models[name].One2N_To, meta.Name)
+				m.models[name].N2One = append(m.models[name].N2One, meta.Name)
 			}
 		}
 	}
@@ -289,6 +290,7 @@ func (m *coreModel) Remove(v interface{}) error {
 		}
 	}
 
+	// delete 1-n
 	for _, o2nMeta := range meta.One2N {
 		key := fmt.Sprintf("%s:%d:%s", typeName, pkValue, o2nMeta)
 		all, err := Db.ZAllAsc(key)
@@ -297,6 +299,24 @@ func (m *coreModel) Remove(v interface{}) error {
 		}
 		for _, a := range all {
 			key2 := fmt.Sprintf("%s:%d:%s", o2nMeta, a.Score, typeName)
+			if err := Db.ZDel(key2, pkBytes); err != nil {
+				return err
+			}
+		}
+		if err := Db.ZClear(key); err != nil {
+			return err
+		}
+	}
+
+	// delete n-1
+	for _, n2oMeta := range meta.N2One {
+		key := fmt.Sprintf("%s:%d:%s", typeName, pkValue, n2oMeta)
+		all, err := Db.ZAllAsc(key)
+		if err != nil {
+			return err
+		}
+		for _, a := range all {
+			key2 := fmt.Sprintf("%s:%d:%s", n2oMeta, a.Score, typeName)
 			if err := Db.ZDel(key2, pkBytes); err != nil {
 				return err
 			}
