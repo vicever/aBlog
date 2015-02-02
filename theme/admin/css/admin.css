@@ -492,8 +492,15 @@ body {
   width: 500px;
   margin-right: 12px;
 }
+#article-write-form input[name=slug] {
+  width: 800px;
+}
+#article-write-form label {
+  min-width: 3em;
+  display: inline-block;
+}
 #article-write-form label input {
-  margin-right: 8px;
+  margin: 0 8px;
 }
 #profile-base-form {
   width: 579px;

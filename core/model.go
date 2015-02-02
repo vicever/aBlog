@@ -130,9 +130,6 @@ func (m *coreModel) Register(values ...interface{}) error {
 		rType := reflect.TypeOf(value).Elem()
 		m.registerType(rType, true)
 	}
-	for _, m := range Model.models {
-		fmt.Printf("%#v\n", m)
-	}
 	return nil
 }
 

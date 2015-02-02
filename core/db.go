@@ -18,12 +18,14 @@ func newCoreDb(opt dbConfig) *coreDb {
 	// init nosql
 	db, err := nodb.Open(cfg)
 	if err != nil {
+		Log.Fatal("open nosql fail : %v", err)
 		return nil
 	}
 
 	// select db
 	dbSet, err := db.Select(opt.Index)
 	if err != nil {
+		Log.Fatal("select nosql fail : %v", err)
 		return nil
 	}
 	return &coreDb{dbSet}

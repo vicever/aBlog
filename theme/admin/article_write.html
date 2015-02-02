@@ -22,22 +22,50 @@
                 <input id="article-title" type="text" name="title" required="required" placeholder="article title"/>
                 <textarea name="content" id="article-textarea" placeholder="content here..."></textarea>
                 <p class="field clearfix">
+                    <label for="article-slug">Slug</label>
+                    <input id="article-slug" type="text" name="slug" placeholder="article readable link" required="required"/>
+                    <input id="content-type" name="content-type" type="hidden" value="markdown"/>
+                </p>
+                <p class="field clearfix">
+                    <label for="article-tags">Tags</label>
                     <input id="article-tags" name="tags" type="text" placeholder="article tags"/>
                     <label for="is-private">
-                        <input id="is-private" name="private" type="checkbox" value="1"/>Private
+                        <input id="is-private" name="private" type="checkbox" value="-1"/>Private
                     </label>
+                    <label for="is-comment">
+                        <input id="is-comment" name="is-comment" type="checkbox" value="-1"/>Disable Comment
+                    </label>{{.XsrfFormHtml}}
                     <button class="submit">Save Article</button>
+                    <input id="article-words" name="words" type="hidden"/>
                 </p>
             </form>
         </section>
     </div>
 </div>
 <script>
-    $(function(){
+    function wordCount(data) {
+        var pattern = /[a-zA-Z0-9_\u0392-\u03c9]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
+        var m = data.match(pattern);
+        var count = 0;
+        if (m === null) return count;
+        for (var i = 0; i < m.length; i++) {
+            if (m[i].charCodeAt(0) >= 0x4E00) {
+                count += m[i].length;
+            } else {
+                count += 1;
+            }
+        }
+        return count;
+    }
+    $(function () {
         var editor = new Editor({
             element: document.getElementById("article-textarea")
         });
         editor.render();
+        $('#article-write-form').on("submit", function () {
+            var count = wordCount(editor.codemirror.getValue());
+            $('#article-words').val(count);
+        });
     })
 </script>
 </body>

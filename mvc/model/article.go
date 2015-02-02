@@ -1,6 +1,12 @@
 package model
 
-import "time"
+import (
+	"ablog/core"
+	"ablog/util"
+	"fmt"
+	"strings"
+	"time"
+)
 
 type Article struct {
 	Id   int64  `model:"pk"`
@@ -22,6 +28,20 @@ type Article struct {
 
 	Count *ArticleCount `model:"1-1" json:"-"` // article count
 	Tags  []*ArticleTag `model:"1-n" json:"-"` // article tags
+}
+
+func (a *Article) GenId() {
+	diff := time.Now().Unix() - core.Config.InstallTime
+	a.Id = diff/1800 + 1
+}
+
+func (a *Article) GenGuid() {
+	a.Guid = util.MD5Short(a.Title, fmt.Sprint(a.CreateTime.UnixNano()))
+}
+
+func (a *Article) GenBrief() {
+	str := strings.Split(a.Content, "<--more-->")
+	a.Brief = str[0]
 }
 
 type ArticleCount struct {
