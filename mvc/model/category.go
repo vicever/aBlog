@@ -30,18 +30,18 @@ func GetCategoryBy(column string, v interface{}) *Category {
 }
 
 // get user's categories list
-func GetCategiresByUser(uid int64,countOrder bool) []*Category {
-    s := core.Db.Where("uid = ?",uid)
-    if countOrder{
-        s.OrderBy("count DESC")
-    }else{
-        s.OrderBy("id ASC")
-    }
-    cs := make([]*Category,0)
-    if err := s.Find(cs);err != nil{
-        return nil
-    }
-    return cs
+func GetCategiresByUser(uid int64, countOrder bool) []*Category {
+	s := core.Db.Where("uid = ?", uid)
+	if countOrder {
+		s.OrderBy("count DESC")
+	} else {
+		s.OrderBy("id ASC")
+	}
+	cs := make([]*Category, 0)
+	if err := s.Find(cs); err != nil {
+		return nil
+	}
+	return cs
 }
 
 // delete category by id
