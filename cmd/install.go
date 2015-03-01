@@ -35,6 +35,10 @@ func installCmdFunc(ctx *cli.Context) {
 		new(model.Token),
 		new(model.Category),
 		new(model.CategoryArticle),
+		new(model.Tag),
+		new(model.TagArticle),
+		new(model.Article),
+		new(model.Comment),
 	); err != nil {
 		panic(err)
 	}
