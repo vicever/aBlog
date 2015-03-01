@@ -2,9 +2,9 @@ package api
 
 import (
 	"github.com/fuxiaohei/aBlog/mvc/action"
+	"github.com/fuxiaohei/aBlog/mvc/model"
 	"github.com/lunny/tango"
-    "strings"
-    "github.com/fuxiaohei/aBlog/mvc/model"
+	"strings"
 )
 
 type AuthorizeController struct {
@@ -25,33 +25,34 @@ func (ac *AuthorizeController) Post() {
 }
 
 type AuthorizeCheckController struct {
-    tango.Ctx
+	tango.Ctx
 }
 
 func (ac *AuthorizeCheckController) Post() {
-    params := make(map[string]string)
-    params["uid"] = ac.Req().FormValue("uid")
-    params["token"] = ac.Req().FormValue("token")
-    result := action.Call(action.IsAuthorized,params)
-    ac.ServeJson(result)
+	params := make(map[string]string)
+	params["uid"] = ac.Req().FormValue("uid")
+	params["token"] = ac.Req().FormValue("token")
+	result := action.Call(action.IsAuthorized, params)
+	ac.ServeJson(result)
 }
 
 // auth base struct
 type AuthBase struct {
-    tango.Ctx
+	tango.Ctx
 }
 
-func (ab *AuthBase) IsAuthorized() (bool,*model.Token) {
-    values := strings.Split(ab.Req().FormValue("token"),"-")
-    if len(values) != 2{
-        return false
-    }
-    params := make(map[string]string)
-    params["uid"] = values[0]
-    params["token"] = values[1]
-    result := action.Call(action.IsAuthorized,params)
-    if result.Meta.Status{
-       return true,result.Data["token"].(*model.Token)
-    }
-    return false,nil
+func (ab *AuthBase) IsAuthorized() (bool, *model.Token) {
+	values := strings.Split(ab.Req().FormValue("token"), "-")
+	if len(values) != 2 {
+		return false, nil
+	}
+	params := make(map[string]string)
+	params["uid"] = values[0]
+	params["token"] = values[1]
+	result := action.Call(action.IsAuthorized, params)
+	if result.Meta.Status {
+		m := result.Data.(map[string]interface{})
+		return true, m["token"].(*model.Token)
+	}
+	return false, nil
 }

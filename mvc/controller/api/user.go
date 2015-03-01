@@ -40,3 +40,22 @@ func (uc *UserInfoController) Post() {
 	params["bio"] = uc.Req().FormValue("bio")
 	uc.ServeJson(action.Call(action.UpdateUser, params))
 }
+
+type UserPasswordController struct {
+	AuthBase
+}
+
+func (uc *UserPasswordController) Post() {
+	// check auth
+	b, t := uc.IsAuthorized()
+	if !b {
+		uc.ResponseWriter.WriteHeader(401)
+		return
+	}
+
+	params := make(map[string]string)
+	params["uid"] = strconv.FormatInt(t.Uid, 64)
+	params["new"] = uc.Req().FormValue("new")
+	params["old"] = uc.Req().FormValue("old")
+	uc.ServeJson(action.Call(action.UpdateUserPassword, params))
+}

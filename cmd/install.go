@@ -33,6 +33,8 @@ func installCmdFunc(ctx *cli.Context) {
 	if err := core.Db.Sync2(
 		new(model.User),
 		new(model.Token),
+		new(model.Category),
+		new(model.CategoryArticle),
 	); err != nil {
 		panic(err)
 	}
