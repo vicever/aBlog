@@ -15,6 +15,9 @@ func init() {
 	errorMap[ERR_CATEGORY_NOT_OWNER] = "not-category-owner"
 }
 
+// get category
+// input "uid,cid,slug"
+// ouput "category:*model.Category"
 func GetCategory(params ActionParam) ActionResult {
 	uid, _ := strconv.ParseInt(params["uid"], 10, 64)
 	cid, _ := strconv.ParseInt(params["cid"], 10, 64)
@@ -51,6 +54,9 @@ func GetCategory(params ActionParam) ActionResult {
 	return NewResultError(ERR_INVALID_PARAMS)
 }
 
+// get categories
+// input "uid,order"
+// output "categories:[]*model.Category"
 func GetCategories(params ActionParam) ActionResult {
 	uid, _ := strconv.ParseInt(params["uid"], 10, 64)
 	order := params["order"]
@@ -63,6 +69,9 @@ func GetCategories(params ActionParam) ActionResult {
 	})
 }
 
+// create new category
+// input "uid,name,slug,desc"
+// output "category:*model.Category"
 func CreateCategory(params ActionParam) ActionResult {
 	uid, _ := strconv.ParseInt(params["uid"], 10, 64)
 	name := params["name"]
@@ -90,6 +99,9 @@ func CreateCategory(params ActionParam) ActionResult {
 	})
 }
 
+// update category
+// input "uid,cid,name,slug,desc"
+// output "category:*model.Category"
 func UpdateCategory(params ActionParam) ActionResult {
 	cid, _ := strconv.ParseInt(params["cid"], 10, 64)
 	uid, _ := strconv.ParseInt(params["uid"], 10, 64)
@@ -117,6 +129,9 @@ func UpdateCategory(params ActionParam) ActionResult {
 	})
 }
 
+// remove category
+// input "uid,cid"
+// output "category:*model.Category"
 func RemoveCategory(params ActionParam) ActionResult {
 	cid, _ := strconv.ParseInt(params["cid"], 10, 64)
 	uid, _ := strconv.ParseInt(params["uid"], 10, 64)
