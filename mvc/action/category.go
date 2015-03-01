@@ -8,11 +8,59 @@ import (
 )
 
 const ERR_CATEGORY_NO_FOUND = 3001
-const ERR_CATEGORY_NOT_OWNER = 3001
+const ERR_CATEGORY_NOT_OWNER = 3002
 
 func init() {
 	errorMap[ERR_CATEGORY_NO_FOUND] = "no-category"
 	errorMap[ERR_CATEGORY_NOT_OWNER] = "not-category-owner"
+}
+
+func GetCategory(params ActionParam) ActionResult {
+	uid, _ := strconv.ParseInt(params["uid"], 10, 64)
+	cid, _ := strconv.ParseInt(params["cid"], 10, 64)
+	if uid == 0 {
+		return NewResultError(ERR_INVALID_PARAMS)
+	}
+	// get by cid
+	if cid > 0 {
+		c := model.GetCategoryBy("id", cid)
+		if c == nil {
+			return NewResultError(ERR_CATEGORY_NO_FOUND)
+		}
+		if c.Uid != uid {
+			return NewResultError(ERR_CATEGORY_NOT_OWNER)
+		}
+		return NewResult(map[string]interface{}{
+			"category": c,
+		})
+	}
+	// get slug
+	slug := params["slug"]
+	if slug != "" {
+		c := model.GetCategoryBy("slug", slug)
+		if c == nil {
+			return NewResultError(ERR_CATEGORY_NO_FOUND)
+		}
+		if c.Uid != uid {
+			return NewResultError(ERR_CATEGORY_NOT_OWNER)
+		}
+		return NewResult(map[string]interface{}{
+			"category": c,
+		})
+	}
+	return NewResultError(ERR_INVALID_PARAMS)
+}
+
+func GetCategories(params ActionParam) ActionResult {
+	uid, _ := strconv.ParseInt(params["uid"], 10, 64)
+	order := params["order"]
+	if uid == 0 {
+		return NewResultError(ERR_INVALID_PARAMS)
+	}
+	categories := model.GetCategiresByUser(uid, order != "")
+	return NewResult(map[string]interface{}{
+		"categories": categories,
+	})
 }
 
 func CreateCategory(params ActionParam) ActionResult {

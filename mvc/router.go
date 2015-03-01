@@ -13,5 +13,6 @@ func Init() {
 	apiGroup.Any("/user/info", new(api.UserInfoController))
 	apiGroup.Post("/user/password", new(api.UserPasswordController))
 	apiGroup.Any("/category", new(api.CategoryController))
+	apiGroup.Any("/categories", new(api.CategoriesController))
 	core.Server.Group("/api", apiGroup)
 }
