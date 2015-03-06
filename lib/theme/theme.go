@@ -2,9 +2,13 @@ package theme
 import (
     "errors"
     "path/filepath"
+    "sync"
 )
 
-var tm *themeManager
+var (
+    tm *themeManager
+    l sync.RWMutex
+)
 
 func init() {
     tm = newThemeManager()
@@ -25,7 +29,7 @@ func newThemeManager() *themeManager {
     }
 }
 
-// set theme to global
+// set theme to global, todo : download and unzip theme, not only add to map
 func SetTheme(name string, dir string) {
     if dir == ""{
         delete(tm.themes,name)
@@ -37,6 +41,8 @@ func SetTheme(name string, dir string) {
 // set current theme name,
 // if not exist, return error.
 func SetCurrent(name string) error{
+    l.Lock()
+    defer l.Unlock()
     if tm.themes[name] == ""{
         return errors.New("non-exist theme : "+name)
     }
@@ -49,12 +55,6 @@ func GetCurrent(name string) string{
     return tm.current
 }
 
-type Themer interface {
-    ThemeFile(file string)string
-}
-
-type Themed struct {}
-
-func (t *Themed) ThemeFile(file string) string{
+func File(file string) string{
     return filepath.Join(tm.themes[tm.current],file)
 }
