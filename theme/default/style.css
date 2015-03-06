@@ -1,0 +1,46 @@
+.container{
+    max-width: 1024px;
+    margin: auto;
+}
+#header,#header .container{
+    height: 80px;
+    line-height: 80px;
+}
+#header .right.item{
+    margin-top: 8px;
+}
+#site-title{
+    padding-left: 0;
+}
+#manage .menu{
+    left:auto;
+    right:0;
+}
+#manage{
+    background-color: transparent !important;
+}
+#main{
+    margin-top: 120px;
+}
+#article-list article{
+    padding: 1.5rem;
+    margin: 3rem 0;
+}
+#article-list article h2.dividing{
+    padding-bottom: .5rem;
+}
+.article-content p{
+    line-height: 1.8;
+    font-size: 1.05rem;
+}
+#article-list article header{
+    margin-top: 1.2rem;
+}
+#article-list article .ribbon{
+    margin-left: -6px;
+}
+#footer{
+    background-color: #DADADA;
+    padding: 2rem;
+    margin-top: 4rem;
+}

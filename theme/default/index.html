@@ -2,11 +2,116 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Home</title>
+    <title>posts</title>
     <link rel="stylesheet" href="/theme/default/semantic/semantic.min.css"/>
+    <link rel="stylesheet" href="/theme/default/style.css"/>
+    <script src="/theme/default/jquery/jquery-1.11.2.min.js"></script>
     <script src="/theme/default/semantic/semantic.min.js"></script>
 </head>
 <body>
-test
+<header id="header" class="ui fixed main menu">
+    <div class="container">
+        <div class="item" id="site-title">
+            <h1 class="ui header huge">aBlog</h1>
+        </div>
+        <div class="right item">
+            <a class="item" href="#">Articles</a>
+            <a class="item" href="#">About</a>
+            <a class="item" href="#">Friends</a>
+            <div id="manage" class="ui dropdown item" data-content="admin management">
+                <a href="#">Manage<i class="dropdown icon"></i></a>
+                <div class="menu">
+                    <a class="ui item" href="#">Dashboard</a>
+                    <a class="ui item" href="#">Plugins</a>
+                    <a class="ui item" href="#">Theme</a>
+                    <a class="ui item" href="#">Advanced</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<div id="main">
+    <div class="container">
+        <div id="article-list">
+            <article class="ui segment">
+                <a class="ui ribbon red label" href="#">12  Comments</a>
+                <header>
+                    <h2 class="ui huge header dividing">
+                        <span class="article-date">02.28 - </span>
+                        <a href="#">Introducing Relay and GraphQL</a>
+                        <a class="ui image label tiny floated right" href="#">
+                            <img src="http://tp1.sinaimg.cn/1865987544/180/5697090972/1" alt="#"/>
+                            Author
+                        </a>
+                    </h2>
+                </header>
+                <section class="article-content">
+                    <h4>Data fetching for React applications</h4>
+                    <p>There's more to building an application than creating a user interface. Data fetching is still a tricky problem, especially as applications become more complicated. At React.js Conf we announced two projects we've created at Facebook to make data fetching simple for developers, even as a product grows to include dozens of contributors and the application becomes as complex as Facebook itself.</p>
+                    <p>The two projects — Relay and GraphQL — have been in use in production at Facebook for some time, and we're excited to be bringing them to the world as open source in the future. In the meantime, we wanted to share some additional information about the projects here.</p>
+                </section>
+                <div class="ui divider section"></div>
+                <aside class="ui grid">
+                    <div class="article-topic ui eight wide column">
+                        <strong>Topic:</strong>
+                        <a href="#">Development</a>
+                    </div>
+                    <div class="article-tags ui eight wide column right aligned">
+                        <a class="ui tag label" href="#">Golang</a>
+                        <a class="ui tag label" href="#">Blog</a>
+                    </div>
+                </aside>
+
+            </article>
+            <article class="ui segment">
+                <a class="ui ribbon red label" href="#">12  Comments</a>
+                <header>
+                    <h2 class="ui huge header dividing">
+                        <span class="article-date">02.28 - </span>
+                        <a href="#">Introducing Relay and GraphQL</a>
+                        <a class="ui image label tiny floated right" href="#">
+                            <img src="http://tp1.sinaimg.cn/1865987544/180/5697090972/1" alt="#"/>
+                            Author
+                        </a>
+                    </h2>
+                </header>
+                <section class="article-content">
+                    <h4>What is Relay?</h4>
+                    <p>Relay is a new framework from Facebook that provides data-fetching functionality for React
+                        applications. It was announced at React.js Conf (January 2015).</p>
+                    <p>Each component specifies its own data dependencies declaratively using a query language called
+                        GraphQL. The data is made available to the component via properties on this.props.</p>
+                    <p>Developers compose these React components naturally, and Relay takes care of composing the data
+                        queries into efficient batches, providing each component with exactly the data that it requested
+                        (and no more), updating those components when the data changes, and maintaining a client-side
+                        store (cache) of all data.</p>
+                </section>
+                <div class="ui divider section"></div>
+                <aside class="ui grid">
+                    <div class="article-topic ui eight wide column">
+                        <strong>Topic:</strong>
+                        <a href="#">Development</a>
+                    </div>
+                    <div class="article-tags ui eight wide column right aligned">
+                        <a class="ui tag label" href="#">公众</a>
+                        <a class="ui tag label" href="#">Blog</a>
+                    </div>
+                </aside>
+
+            </article>
+        </div>
+    </div>
+</div>
+<footer id="footer">
+    <div class="container">
+        <div class="ui grid two column">
+            <div class="column">111</div>
+            <div class="column right aligned">222</div>
+        </div>
+    </div>
+</footer>
+<script>
+    $('.ui.dropdown').dropdown({"on":"hover"});
+</script>
 </body>
 </html>
