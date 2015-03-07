@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>login.html</title>
+    <link rel="stylesheet" href="/theme/default/semantic/semantic.min.css"/>
+    <link rel="stylesheet" href="/theme/default/admin/admin.css"/>
+    <script src="/theme/default/jquery/jquery-1.11.2.min.js"></script>
+    <script src="/theme/default/semantic/semantic.min.js"></script>
+</head>
+<body>
+<div id="login-container" class="ui segment">
+    <h2 id="login-title" class="ui header huge dividing">Login to aBlog</h2>
+
+    <form id="login-form" action="/login" class="ui form" method="post">
+        <div class="field">
+            <label for="login-user">Username</label>
+            <input id="login-user" type="text" name="user" placeholder="your name"/>
+        </div>
+        <div class="field">
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" name="password" placeholder="your password"/>
+        </div>
+        <div class="two fields">
+            <div class="field forget-password">
+                <a href="#">Forget password ?</a>
+            </div>
+            <div class="field ui grid right aligned">
+                <button class="ui button primary">Login</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    $("#login-form").form({
+        user: {
+            identifier  : 'user',
+            rules: [
+                {
+                    type   : 'length[3]',
+                    prompt : 'Please enter your name, at least 3 charactors'
+                }
+            ]
+        },
+        password: {
+            identifier  : 'password',
+            rules: [
+                {
+                    type   : 'length[6]',
+                    prompt : 'Please enter your password, at least 6 charactors'
+                }
+            ]
+        }
+    },{inline : true})
+</script>
+</body>
+</html>

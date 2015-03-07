@@ -8,6 +8,15 @@ import (
 	"time"
 )
 
+const(
+    USER_ROLE_ADMIN int8 = 1
+    USER_ROLE_WRITER int8 = 3
+    USER_ROLE_READER int8 = 5
+
+    USER_STATUS_ACTIVE int8= 1
+    USER_STATUS_DISACTIVE int8 = 3
+)
+
 type User struct {
 	Id           int64  `xorm:"pk autoincr" json:"id"`
 	Name         string `xorm:"notnull index(user-name)" json:"name"`
@@ -63,7 +72,7 @@ func CreateUser(name string, password string, email string, role int8) *User {
 		CreateTime: time.Now().Unix(),
 		LoginTime:  time.Now().Unix(),
 		Role:       role,
-		Status:     1,
+		Status:     USER_STATUS_ACTIVE,
 	}
 	u.GeneratePassword(password)
 	if _, err := core.Db.Insert(u); err != nil {

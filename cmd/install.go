@@ -39,6 +39,8 @@ func installCmdFunc(ctx *cli.Context) {
 		new(model.TagArticle),
 		new(model.Article),
 		new(model.Comment),
+		new(model.Setting),
+		new(model.Media),
 	); err != nil {
 		panic(err)
 	}
@@ -48,5 +50,5 @@ func installCmdFunc(ctx *cli.Context) {
 }
 
 func prepareDefaultData() {
-	model.CreateUser("admin", "admin", "admin@example.com", int8(1))
+	model.CreateUser("admin", "admin", "admin@example.com", model.USER_ROLE_ADMIN)
 }

@@ -2,15 +2,15 @@ package mvc
 
 import (
 	"github.com/fuxiaohei/aBlog/core"
+	"github.com/fuxiaohei/aBlog/mvc/controller"
 	"github.com/fuxiaohei/aBlog/mvc/controller/api"
 	"github.com/lunny/tango"
-    "github.com/tango-contrib/renders"
-    "github.com/fuxiaohei/aBlog/mvc/controller"
+	"github.com/tango-contrib/renders"
 )
 
 func Init() {
 
-    // static files middleware
+	// static files middleware
 	core.Server.Use(tango.Static(tango.StaticOptions{
 		Prefix:     "theme",
 		RootPath:   "./theme",
@@ -18,11 +18,11 @@ func Init() {
 		FilterExts: []string{".css", ".js", ".jpg", ".png", ".gif", ".eot", ".otf", ".svg", ".ttf", ".woff", ".woff2"},
 	}))
 
-    // render middleware
-    core.Server.Use(renders.New(renders.Options{
-        Reload:true, // just in dev
-        Directory:"theme",
-    }))
+	// render middleware
+	core.Server.Use(renders.New(renders.Options{
+		Reload:    true, // just in dev
+		Directory: "theme",
+	}))
 
 	// api group
 	apiGroup := tango.NewGroup()
@@ -36,7 +36,7 @@ func Init() {
 	apiGroup.Get("/tags", new(api.TagsController))
 	core.Server.Group("/api", apiGroup)
 
-
-    // page router
-    core.Server.Get("/",new(controller.HomeController))
+	// page router
+    core.Server.Any("/login",new(controller.LoginController))
+	core.Server.Get("/", new(controller.HomeController))
 }

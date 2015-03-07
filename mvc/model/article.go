@@ -19,7 +19,7 @@ type Article struct {
 	Comments int `xorm:"default 0"`
 	Hits     int `xorm:"default 1"`
 
-	tags       []*Tag `xorm:"-"`
+	tags       []*Tag      `xorm:"-"`
 	categories []*Category `xorm:"-"`
-	comments []*Comment `xorm:"-"`
+	comments   []*Comment  `xorm:"-"`
 }
