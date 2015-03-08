@@ -20,7 +20,7 @@ func (lc *LoginController) checkAuthorize() bool {
 	c := lc.Cookies().Get("auth")
 	if c == nil {
 		// no need to check
-		return true
+		return false
 	}
 	c2 := lc.Cookies().Get("auth_uid")
 	params := make(map[string]string)
