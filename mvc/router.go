@@ -37,6 +37,6 @@ func Init() {
 	core.Server.Group("/api", apiGroup)
 
 	// page router
-    core.Server.Any("/login",new(controller.LoginController))
+	core.Server.Any("/login", new(controller.LoginController))
 	core.Server.Get("/", new(controller.HomeController))
 }

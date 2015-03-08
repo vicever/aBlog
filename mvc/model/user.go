@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-const(
-    USER_ROLE_ADMIN int8 = 1
-    USER_ROLE_WRITER int8 = 3
-    USER_ROLE_READER int8 = 5
+const (
+	USER_ROLE_ADMIN  int8 = 1
+	USER_ROLE_WRITER int8 = 3
+	USER_ROLE_READER int8 = 5
 
-    USER_STATUS_ACTIVE int8= 1
-    USER_STATUS_DISACTIVE int8 = 3
+	USER_STATUS_ACTIVE    int8 = 1
+	USER_STATUS_DISACTIVE int8 = 3
 )
 
 type User struct {

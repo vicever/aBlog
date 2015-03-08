@@ -21,6 +21,7 @@ func servCmdFunc(ctx *cli.Context) {
 
 	// connect db
 	core.InitDb()
+	core.Db.ShowSQL = true
 
 	// init server
 	core.InitServer()
