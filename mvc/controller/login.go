@@ -31,7 +31,7 @@ func (lc *LoginController) checkAuthorize() bool {
 }
 
 func (lc *LoginController) Get() {
-	// check fail
+	// check cookie
 	if lc.checkAuthorize() {
 		lc.Redirect("/manage/dashboard", 302)
 		return
