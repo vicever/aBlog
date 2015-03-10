@@ -4,7 +4,6 @@ import (
 	"github.com/fuxiaohei/aBlog/mvc/action"
 	"github.com/fuxiaohei/aBlog/mvc/model"
 	"github.com/lunny/tango"
-	"strings"
 )
 
 type AuthorizeController struct {
@@ -42,13 +41,9 @@ type AuthBase struct {
 }
 
 func (ab *AuthBase) IsAuthorized() (bool, *model.Token) {
-	values := strings.Split(ab.Req().FormValue("token"), "-")
-	if len(values) != 2 {
-		return false, nil
-	}
 	params := make(map[string]string)
-	params["uid"] = values[0]
-	params["token"] = values[1]
+	params["uid"] = ab.Req().FormValue("uid")
+	params["token"] = ab.Req().FormValue("token")
 	result := action.Call(action.IsAuthorized, params)
 	if result.Meta.Status {
 		m := result.Data.(map[string]interface{})
