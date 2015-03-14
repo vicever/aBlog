@@ -1,14 +1,80 @@
 /*
 -------- login.html
 */
-#login-container{
+#login-container {
     width: 480px;
     padding: 2rem;
     margin: 80px auto;
 }
-#login-title{
+
+#login-title {
     margin-bottom: 2rem;
 }
-.forget-password{
+
+.forget-password {
     line-height: 2.5rem;
+}
+
+/*
+----- admin basic
+*/
+.container {
+    margin: auto;
+    max-width: 1200px;
+}
+
+#header {
+    background-color: #FFF;
+    height: 50px;
+}
+
+#header .container .item {
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 49px;
+    height: 49px;
+}
+
+#title {
+    margin: 0;
+    line-height: 49px;
+}
+
+#header .nav-item {
+    padding-left: 0;
+}
+
+#header .nav-item .item {
+    text-align: center;
+}
+
+#header .nav-item:before {
+    width: 0;
+}
+
+#header .user-item img {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-top: -3px;
+    margin-right: .5em;
+}
+
+#logout {
+    color: #d95c5c;
+}
+
+#header .dropdown .menu {
+    left: -4px;
+    margin-top: -1px;
+}
+
+#header .dropdown .menu .item {
+    height: auto;
+    line-height: normal;
+    width: auto;
+}
+
+#header .dropdown.item {
+    background-color: transparent !important;
 }
