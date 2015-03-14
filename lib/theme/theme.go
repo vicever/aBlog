@@ -59,3 +59,7 @@ func GetCurrent(name string) string {
 func File(file string) string {
 	return filepath.Join(tm.themes[tm.current], file)
 }
+
+func AdminFile(file string) string {
+	return filepath.Join("admin", file)
+}

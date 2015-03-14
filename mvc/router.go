@@ -3,6 +3,7 @@ package mvc
 import (
 	"github.com/fuxiaohei/aBlog/core"
 	"github.com/fuxiaohei/aBlog/mvc/controller"
+	"github.com/fuxiaohei/aBlog/mvc/controller/admin"
 	"github.com/fuxiaohei/aBlog/mvc/controller/api"
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/renders"
@@ -35,6 +36,12 @@ func Init() {
 	apiGroup.Any("/tag", new(api.TagController))
 	apiGroup.Get("/tags", new(api.TagsController))
 	core.Server.Group("/api", apiGroup)
+
+	// admin group
+	core.Server.Use(admin.AuthHandler())
+	adminGroup := tango.NewGroup()
+	adminGroup.Get("/dashboard", new(admin.DashboardController))
+	core.Server.Group("/admin", adminGroup)
 
 	// page router
 	core.Server.Any("/login", new(controller.LoginController))

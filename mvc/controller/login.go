@@ -36,7 +36,7 @@ func (lc *LoginController) Get() {
 		lc.Redirect("/manage/dashboard", 302)
 		return
 	}
-	lc.Render(theme.File("admin/login.html"))
+	lc.Render(theme.AdminFile("login.html"))
 }
 
 func (lc *LoginController) Post() {
