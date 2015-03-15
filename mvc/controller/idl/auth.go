@@ -1,34 +1,47 @@
-package admin
+package idl
 
 import (
-	"fmt"
 	"github.com/fuxiaohei/aBlog/mvc/action"
 	"github.com/fuxiaohei/aBlog/mvc/model"
 	"github.com/lunny/tango"
 )
 
-type IAuthController interface {
+type IAuth interface {
 	SetUser(*model.User, *model.Token) // set user and token to controller fields
 	FailRedirect() string              // fail redirect
 }
 
-type AuthController struct {
+type AuthRedirecter struct {
 	AuthUser  *model.User
 	AuthToken *model.Token
 }
 
-func (ac *AuthController) SetUser(u *model.User, t *model.Token) {
+func (ac *AuthRedirecter) SetUser(u *model.User, t *model.Token) {
 	ac.AuthUser = u
 	ac.AuthToken = t
 }
 
-func (ac *AuthController) FailRedirect() string {
+func (ac *AuthRedirecter) FailRedirect() string {
 	return "/login"
+}
+
+type AuthNoRedirecter struct {
+	AuthUser  *model.User
+	AuthToken *model.Token
+}
+
+func (ac *AuthNoRedirecter) SetUser(u *model.User, t *model.Token) {
+	ac.AuthUser = u
+	ac.AuthToken = t
+}
+
+func (ac *AuthNoRedirecter) FailRedirect() string {
+	return ""
 }
 
 func AuthHandler() tango.HandlerFunc {
 	return func(ctx *tango.Context) {
-		controller, ok := ctx.Action().(IAuthController)
+		controller, ok := ctx.Action().(IAuth)
 		// apply to IAuthController
 		if !ok {
 			ctx.Next()
@@ -42,7 +55,6 @@ func AuthHandler() tango.HandlerFunc {
 			params["uid"] = c2.Value
 			params["token"] = c.Value
 			result := action.Call(action.IsAuthorized, params)
-			fmt.Println(result)
 
 			if result.Meta.Status {
 				// auth success

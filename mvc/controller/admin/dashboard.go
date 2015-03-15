@@ -1,13 +1,14 @@
 package admin
 
 import (
+	"fmt"
 	"github.com/fuxiaohei/aBlog/lib/theme"
+	"github.com/fuxiaohei/aBlog/mvc/controller/idl"
 	"github.com/tango-contrib/renders"
-    "fmt"
 )
 
 type DashboardController struct {
-	AuthController
+	idl.AuthRedirecter
 	renders.Renderer
 }
 
