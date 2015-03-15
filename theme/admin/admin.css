@@ -52,6 +52,10 @@
     width: 0;
 }
 
+#header .user-item {
+    padding-left: 0;
+}
+
 #header .user-item img {
     width: 28px;
     height: 28px;

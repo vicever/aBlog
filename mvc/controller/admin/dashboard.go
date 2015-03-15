@@ -3,6 +3,7 @@ package admin
 import (
 	"github.com/fuxiaohei/aBlog/lib/theme"
 	"github.com/tango-contrib/renders"
+    "fmt"
 )
 
 type DashboardController struct {
@@ -12,5 +13,5 @@ type DashboardController struct {
 
 func (dc *DashboardController) Get() {
 	//println(dc.AuthUser.Name)
-	dc.Render(theme.AdminFile("dashboard.html"))
+	fmt.Println(dc.Render(theme.AdminFile("dashboard.html")))
 }

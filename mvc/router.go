@@ -45,5 +45,6 @@ func Init() {
 
 	// page router
 	core.Server.Any("/login", new(controller.LoginController))
+	core.Server.Get("/logout", new(controller.LogoutController))
 	core.Server.Get("/", new(controller.HomeController))
 }

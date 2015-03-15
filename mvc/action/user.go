@@ -77,6 +77,17 @@ func IsAuthorized(param ActionParam) ActionResult {
 	})
 }
 
+func Unauthorize(param ActionParam) ActionResult {
+	// need user_id and token value
+	uid, _ := strconv.ParseInt(param["uid"], 10, 64)
+	token := param["token"]
+	// get token by uid and token
+	t := model.RemoveToken(uid, token)
+	return NewResult(map[string]interface{}{
+		"token": t,
+	})
+}
+
 // get user by other-user. it checkes other-user's access.
 // input "uid,oid"
 // output "user:*model.User"

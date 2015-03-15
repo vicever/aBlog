@@ -27,13 +27,13 @@ func (lc *LoginController) checkAuthorize() bool {
 	params["uid"] = c2.Value
 	params["token"] = c.Value
 	result := action.Call(action.IsAuthorized, params)
-	return result.Meta.Status
+	return result.Meta.Status // true value means logged
 }
 
 func (lc *LoginController) Get() {
 	// check cookie
 	if lc.checkAuthorize() {
-		lc.Redirect("/manage/dashboard", 302)
+		lc.Redirect("/admin/dashboard", 302)
 		return
 	}
 	lc.Render(theme.AdminFile("login.html"))
@@ -70,5 +70,24 @@ func (lc *LoginController) Post() {
 		HttpOnly: true,
 	}
 	lc.Cookies().Set(cookie)
-	lc.Redirect("/manage/dashboard")
+	lc.Redirect("/admin/dashboard")
+}
+
+type LogoutController struct {
+	tango.Ctx
+}
+
+func (lc *LogoutController) Get() {
+	c := lc.Cookies().Get("auth")
+	if c != nil {
+		// call unauthorize to delete token in database
+		c2 := lc.Cookies().Get("auth_uid")
+		params := make(map[string]string)
+		params["uid"] = c2.Value
+		params["token"] = c.Value
+		action.Call(action.Unauthorize, params)
+		lc.Cookies().Del("auth")
+		lc.Cookies().Del("auth_uid")
+	}
+	lc.Redirect("/login", 302)
 }
