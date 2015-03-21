@@ -42,6 +42,8 @@ func Init() {
 	core.Server.Use(idl.AuthHandler())
 	adminGroup := tango.NewGroup()
 	adminGroup.Get("/dashboard", new(admin.DashboardController))
+	adminGroup.Any("/profile", new(admin.ProfileController))
+	adminGroup.Post("/password", new(admin.PasswordController))
 	core.Server.Group("/admin", adminGroup)
 
 	// page router

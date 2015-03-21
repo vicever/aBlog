@@ -35,6 +35,10 @@
     height: 49px;
 }
 
+#header .container > .item:first-child{
+    padding-left: 0;
+}
+
 #title {
     margin: 0;
     line-height: 49px;
@@ -69,8 +73,8 @@
 }
 
 #header .dropdown .menu {
-    left: -4px;
     margin-top: -1px;
+    margin-left: -1px;
 }
 
 #header .dropdown .menu .item {
@@ -81,4 +85,37 @@
 
 #header .dropdown.item {
     background-color: transparent !important;
+}
+
+.main-container{
+    margin-top: 80px;
+}
+
+/*
+----- profile page
+*/
+
+#profile-form .inline.field label{
+    width: 10rem;
+}
+
+#profile-form .inline.field input{
+    width: 75%;
+}
+
+#profile-form textarea{
+    resize: vertical;
+    width:95%;
+}
+
+#profile-form .ui.message{
+    width: 95%;
+}
+
+#password-form .inline.field label{
+    width: 7rem;
+}
+
+#password-form .inline.field input{
+    width: 60%;
 }

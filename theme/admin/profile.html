@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/theme/admin/semantic/semantic.min.css"/>
+    <link rel="stylesheet" href="/theme/admin/admin.css"/>
+    <script src="/theme/admin/jquery/jquery-1.11.2.min.js"></script>
+    <script src="/theme/admin/semantic/semantic.min.js"></script>
+    <script src="/theme/admin/admin.js"></script>
+</head>
+<body>
+{{template "admin/header.html" .}}
+<div id="profile-container" class="main-container">
+    <div class="container">
+        <div class="ui grid">
+            <div class="ten wide column">
+                <form class="ui form" id="profile-form" action="#" method="post">{{if .IsUpdate}}
+                    <div class="ui positive message">Update Success !</div>{{else}}
+                    <div class="ui error message">Update Fail !</div>{{end}}
+                    <div class="inline field">
+                        <label for="username">Username</label>
+                        <input type="text" placeholder="your user name" name="name" id="username" value="{{.AuthUser.Name}}"/>
+                    </div>
+                    <div class="inline field">
+                        <label for="nickname">Nickname</label>
+                        <input id="nickname" type="text" placeholder="your nick name" name="nick" value="{{.AuthUser.Nick}}"/>
+                    </div>
+                    <div class="inline field">
+                        <label for="email">Email</label>
+                        <input id="email" type="email" name="email" placeholder="your email" value="{{.AuthUser.Email}}"/>
+                    </div>
+                    <div class="inline field">
+                        <label for="url">Url</label>
+                        <input id="url" type="text" placeholder="your url" name="url" value="{{.AuthUser.Url}}"/>
+                    </div>
+                    <div class="field">
+                        <label for="bio">Bio</label>
+                        <textarea name="bio" id="bio">{{.AuthUser.Bio}}</textarea>
+                    </div>
+                    <button class="ui submit button">Update</button>
+                </form>
+            </div>
+            <div class="six wide column">
+                <form id="password-form" class="ui form red segment" action="/admin/password" method="post">{{if .IsPassword}}
+                    <div class="ui positive message">Update Success !</div>{{else}}
+                    <div class="ui error message">Update Fail !</div>{{end}}
+                    <div class="inline field">
+                        <label for="old-password">Old Password</label>
+                        <input id="old-password" type="password" name="old" placeholder="your old password"/>
+                    </div>
+                    <div class="inline field">
+                        <label for="new-password">New Password</label>
+                        <input id="new-password" type="password" name="new" placeholder="type in new password"/>
+                    </div>
+                    <div class="inline field">
+                        <label for="confirm-password">Confirm</label>
+                        <input id="confirm-password" type="password" name="confirm" placeholder="confirm your new password"/>
+                    </div>
+                    <button class="ui submit button">Change</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
