@@ -56,4 +56,5 @@ func prepareDefaultData() {
 
 	// prepare default contents
 	model.CreateCategory(user.Id, "default", "default", "this is a default category")
+	model.CreateTag(user.Id, "blog", "blog")
 }

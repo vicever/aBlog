@@ -1,7 +1,6 @@
 package action
 
 import (
-	"github.com/fuxiaohei/aBlog/core"
 	"github.com/fuxiaohei/aBlog/mvc/model"
 	"strconv"
 )
@@ -16,7 +15,7 @@ func init() {
 
 // get tags
 // input "uid,cid,slug"
-// ouput "tag:*model.Tag"
+// output "tag:*model.Tag"
 func GetTag(params ActionParam) ActionResult {
 	uid, _ := strconv.ParseInt(params["uid"], 10, 64)
 	tid, _ := strconv.ParseInt(params["tid"], 10, 64)
@@ -77,12 +76,8 @@ func CreateTag(params ActionParam) ActionResult {
 	if name == "" || slug == "" || uid == 0 {
 		return NewResultError(ERR_INVALID_PARAMS)
 	}
-	t := &model.Tag{
-		Uid:  uid,
-		Name: name,
-		Slug: slug,
-	}
-	if _, err := core.Db.Insert(t); err != nil {
+	t, err := model.CreateTag(uid, name, slug)
+	if err != nil {
 		return NewSystemError(err)
 	}
 	return NewResult(map[string]interface{}{
@@ -101,11 +96,8 @@ func UpdateTag(params ActionParam) ActionResult {
 	if name == "" || slug == "" || uid == 0 || tid == 0 {
 		return NewResultError(ERR_INVALID_PARAMS)
 	}
-	t := &model.Tag{
-		Name: name,
-		Slug: slug,
-	}
-	if _, err := core.Db.Cols("name,slug").Where("id = ? AND uid = ?", tid, uid).Update(t); err != nil {
+	t, err := model.UpdateTag(uid, tid, name, slug)
+	if err != nil {
 		return NewSystemError(err)
 	}
 	return NewResult(map[string]interface{}{

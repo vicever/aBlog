@@ -14,6 +14,29 @@ type TagArticle struct {
 	TagId     int64
 }
 
+func CreateTag(uid int64, name, slug string) (*Tag, error) {
+	t := &Tag{
+		Uid:  uid,
+		Name: name,
+		Slug: slug,
+	}
+	if _, err := core.Db.Insert(t); err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+func UpdateTag(uid, tid int64, name, slug string) (*Tag, error) {
+	t := &Tag{
+		Name: name,
+		Slug: slug,
+	}
+	if _, err := core.Db.Cols("name,slug").Where("id = ? AND uid = ?", tid, uid).Update(t); err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
 func GetTagBy(column string, v interface{}) *Tag {
 	t := new(Tag)
 	if _, err := core.Db.Where(column+" = ?", v).Get(t); err != nil {
