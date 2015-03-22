@@ -50,5 +50,10 @@ func installCmdFunc(ctx *cli.Context) {
 }
 
 func prepareDefaultData() {
-	model.CreateUser("admin", "admin", "admin@example.com", model.USER_ROLE_ADMIN)
+
+	// prepare admin user
+	user := model.CreateUser("admin", "admin", "admin@example.com", model.USER_ROLE_ADMIN)
+
+	// prepare default contents
+	model.CreateCategory(user.Id, "default", "default", "this is a default category")
 }

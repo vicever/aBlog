@@ -54,8 +54,7 @@ func (lc *LoginController) Post() {
 	}
 
 	// auth succeed, set cookie
-	resultMap := result.Data.(map[string]interface{})
-	token := resultMap["token"].(*model.Token)
+	token := result.Data["token"].(*model.Token)
 	cookie := &http.Cookie{
 		Name:     "auth",
 		Value:    token.Value,

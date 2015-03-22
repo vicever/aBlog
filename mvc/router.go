@@ -44,6 +44,7 @@ func Init() {
 	adminGroup.Get("/dashboard", new(admin.DashboardController))
 	adminGroup.Any("/profile", new(admin.ProfileController))
 	adminGroup.Post("/password", new(admin.PasswordController))
+	adminGroup.Any("/taxonomy", new(admin.TaxonomyController))
 	core.Server.Group("/admin", adminGroup)
 
 	// page router

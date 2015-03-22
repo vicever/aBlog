@@ -88,7 +88,7 @@
 }
 
 .main-container{
-    margin-top: 80px;
+    padding-top: 80px;
 }
 
 /*
@@ -118,4 +118,21 @@
 
 #password-form .inline.field input{
     width: 60%;
+}
+
+/*
+----- taxonomy page
+*/
+
+
+#category-table td{
+    line-height: 3.5rem;
+}
+
+#taxonomy-container .taxonomy-tab{
+    padding: 2rem;
+}
+
+#category-table{
+    margin-bottom: 2rem;
 }

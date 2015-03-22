@@ -46,8 +46,7 @@ func (ab *AuthBase) IsAuthorized() (bool, *model.Token) {
 	params["token"] = ab.Req().FormValue("token")
 	result := action.Call(action.IsAuthorized, params)
 	if result.Meta.Status {
-		m := result.Data.(map[string]interface{})
-		return true, m["token"].(*model.Token)
+		return true, result.Data["token"].(*model.Token)
 	}
 	return false, nil
 }

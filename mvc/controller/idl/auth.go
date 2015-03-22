@@ -58,8 +58,7 @@ func AuthHandler() tango.HandlerFunc {
 
 			if result.Meta.Status {
 				// auth success
-				resultMap := result.Data.(map[string]interface{})
-				token := resultMap["token"].(*model.Token)
+				token := result.Data["token"].(*model.Token)
 				user := model.GetUserBy("id", token.Uid)
 				controller.SetUser(user, token)
 				ctx.Next()

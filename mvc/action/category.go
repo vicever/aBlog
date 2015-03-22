@@ -1,10 +1,8 @@
 package action
 
 import (
-	"github.com/fuxiaohei/aBlog/core"
 	"github.com/fuxiaohei/aBlog/mvc/model"
 	"strconv"
-	"time"
 )
 
 const ERR_CATEGORY_NO_FOUND = 3001
@@ -17,7 +15,7 @@ func init() {
 
 // get category
 // input "uid,cid,slug"
-// ouput "category:*model.Category"
+// output "category:*model.Category"
 func GetCategory(params ActionParam) ActionResult {
 	uid, _ := strconv.ParseInt(params["uid"], 10, 64)
 	cid, _ := strconv.ParseInt(params["cid"], 10, 64)
@@ -63,7 +61,7 @@ func GetCategories(params ActionParam) ActionResult {
 	if uid == 0 {
 		return NewResultError(ERR_INVALID_PARAMS)
 	}
-	categories := model.GetCategiresByUser(uid, order != "")
+	categories := model.GetCategoriesByUser(uid, order != "")
 	return NewResult(map[string]interface{}{
 		"categories": categories,
 	})
@@ -83,15 +81,8 @@ func CreateCategory(params ActionParam) ActionResult {
 	if desc == "" {
 		desc = name
 	}
-	c := &model.Category{
-		Uid:         uid,
-		Name:        name,
-		Slug:        slug,
-		Description: desc,
-		Count:       0,
-		CreateTime:  time.Now().Unix(),
-	}
-	if _, err := core.Db.Insert(c); err != nil {
+	c, err := model.CreateCategory(uid, name, slug, desc)
+	if err != nil {
 		return NewSystemError(err)
 	}
 	return NewResult(map[string]interface{}{
@@ -114,14 +105,8 @@ func UpdateCategory(params ActionParam) ActionResult {
 	if desc == "" {
 		desc = name
 	}
-	c := &model.Category{
-		Name:        name,
-		Slug:        slug,
-		Description: desc,
-		Count:       0,
-		CreateTime:  time.Now().Unix(),
-	}
-	if _, err := core.Db.Cols("name,slug,description").Where("id = ? AND uid = ?", cid, uid).Update(c); err != nil {
+	c, err := model.UpdateCategory(uid, cid, name, slug, desc)
+	if err != nil {
 		return NewSystemError(err)
 	}
 	return NewResult(map[string]interface{}{

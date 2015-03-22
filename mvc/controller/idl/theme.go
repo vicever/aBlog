@@ -18,8 +18,6 @@ type ThemeRenderer struct {
 func (tr *ThemeRenderer) Assign(key string, val interface{}) {
 	if len(tr.viewData) == 0 {
 		tr.viewData = make(renders.T)
-		tr.viewData[key] = val
-		return
 	}
 	tr.viewData[key] = val
 }

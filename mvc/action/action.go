@@ -27,8 +27,8 @@ type ActionParam map[string]string
 
 // action returning result
 type ActionResult struct {
-	Meta ActionResultMeta `json:"meta"` // meta data shows the result is ok or failed with error
-	Data interface{}      `json:"data"` // returning data
+	Meta ActionResultMeta       `json:"meta"` // meta data shows the result is ok or failed with error
+	Data map[string]interface{} `json:"data"` // returning data
 }
 
 // action result meta
@@ -39,7 +39,7 @@ type ActionResultMeta struct {
 }
 
 // new correct result with data
-func NewResult(data interface{}) ActionResult {
+func NewResult(data map[string]interface{}) ActionResult {
 	return ActionResult{
 		Meta: ActionResultMeta{
 			Status: true,
