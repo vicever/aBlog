@@ -24,6 +24,17 @@ func (tc *TaxonomyController) Get() {
 	if result.Meta.Status {
 		tc.Assign("Categories", result.Data["categories"].([]*model.Category))
 	}
+
+	// get single category if updating
+	if cid, _ := strconv.ParseInt(tc.Req().FormValue("category"), 10, 64); cid > 0 {
+		params := make(map[string]string)
+		params["uid"] = strconv.FormatInt(tc.AuthUser.Id, 10)
+		params["cid"] = tc.Req().FormValue("category")
+		result := action.Call(action.GetCategory, params)
+		if result.Meta.Status {
+			tc.Assign("Category", result.Data["category"].(*model.Category))
+		}
+	}
 	tc.Render("taxonomy.html")
 }
 
@@ -34,7 +45,13 @@ func (tc *TaxonomyController) Post() {
 		params["slug"] = tc.Req().FormValue("slug")
 		params["desc"] = tc.Req().FormValue("desc")
 		params["uid"] = strconv.FormatInt(tc.AuthUser.Id, 10)
-		result := action.Call(action.CreateCategory, params)
+		params["cid"] = tc.Req().FormValue("cid")
+		var result action.ActionResult
+		if params["cid"] == "" {
+			result = action.Call(action.CreateCategory, params)
+		} else {
+			result = action.Call(action.UpdateCategory, params)
+		}
 		if result.Meta.Status {
 			tc.Redirect("/admin/taxonomy?category=" + strconv.FormatInt(result.Data["category"].(*model.Category).Id, 10))
 			return

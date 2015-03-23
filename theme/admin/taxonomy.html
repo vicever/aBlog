@@ -37,12 +37,35 @@
                     <td>{{.Description}}</td>
                     <td>{{.Count}}</td>
                     <td>
-                        <a class="ui positive button tiny" href="#"><i class="icon write"></i>modify</a>
+                        <a class="ui positive button tiny" href="/admin/taxonomy?category={{.Id}}"><i class="icon write"></i>modify</a>
                         <a class="ui negative button tiny" href="#"><i class="icon remove"></i>remove</a>
                     </td>
                 </tr>{{end}}
                 </tbody>
-            </table>
+            </table>{{if .Category}}
+            <div id="category-update-contianer" class="ui segment">
+                <h3 class="ui header dividing">Update Category - {{.Category.Name}}</h3>
+                <form class="ui form" id="category-update-form" action="/admin/taxonomy?category=true" method="post">
+                    <div class="two fields">
+                        <div class="field">
+                            <label for="category-name">Name</label>
+                            <input id="category-name" type="text" name="name" placeholder="category name" value="{{.Category.Name}}"/>
+                        </div>
+                        <div class="field">
+                            <label for="category-slug">Slug</label>
+                            <input id="category-slug" type="text" name="slug" placeholder="category slug" value="{{.Category.Slug}}"/>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="category-desc">Description</label>
+                        <input id="category-desc" type="text" name="desc" placeholder="category description" value="{{.Category.Description}}"/>
+                    </div>
+                    <div class="field">
+                        <input id="category-id" type="hidden" name="cid" value="{{.Category.Id}}"/>
+                        <button class="ui primary button">Update Category</button>
+                    </div>
+                </form>
+            </div>{{else}}
             <div class="ui segment" id="category-add-container">
                 <h3 class="ui header dividing">New Category</h3>
                 <form class="ui form" id="category-add-form" action="/admin/taxonomy?category=true" method="post">
@@ -64,7 +87,7 @@
                         <button class="ui primary button">Add Category</button>
                     </div>
                 </form>
-            </div>
+            </div>{{end}}
         </div>
         <div class="ui bottom attached tab segment taxonomy-tab" data-tab="tag-tab">
             this is tag tab

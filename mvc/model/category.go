@@ -44,6 +44,8 @@ func UpdateCategory(uid, cid int64, name, slug, desc string) (*Category, error) 
 		Description: desc,
 		Count:       0,
 		CreateTime:  time.Now().Unix(),
+		Uid:         uid,
+		Id:          cid,
 	}
 	if _, err := core.Db.Cols("name,slug,description").Where("id = ? AND uid = ?", cid, uid).Update(c); err != nil {
 		return nil, err
